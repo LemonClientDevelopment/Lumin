@@ -1,19 +1,22 @@
 package dev.lumin.client.modules;
 
 import dev.lumin.client.Lumin;
-import dev.lumin.client.utils.i18n.TranslateComponent;
 import net.neoforged.neoforge.common.NeoForge;
 
-public abstract class AbstractModule {
+public class Module {
 
-    public TranslateComponent name;
+    public String englishName;
+    public String chineseName;
+
     public Category category;
+
     public int keyBind;
 
     private boolean enabled;
 
-    public AbstractModule(String nameKey, Category category) {
-        this.name = new TranslateComponent("modules", nameKey);
+    public Module(String englishName, String chineseName, Category category) {
+        this.englishName = englishName;
+        this.chineseName = chineseName;
         this.category = category;
     }
 
@@ -27,14 +30,14 @@ public abstract class AbstractModule {
             } catch (Exception ignored) {
             }
 
-            Lumin.LOGGER.info("{} has been enabled", name.suffix());
+            Lumin.LOGGER.info("{} has been enabled", englishName);
         } else {
             try {
                 NeoForge.EVENT_BUS.unregister(this);
             } catch (Exception ignored) {
             }
 
-            Lumin.LOGGER.info("{} has been disabled", name.suffix());
+            Lumin.LOGGER.info("{} has been disabled", englishName);
         }
     }
 

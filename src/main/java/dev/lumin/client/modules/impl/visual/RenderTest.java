@@ -1,28 +1,21 @@
 package dev.lumin.client.modules.impl.visual;
 
 import dev.lumin.client.graphics.renderers.RectRenderer;
-import dev.lumin.client.modules.AbstractModule;
 import dev.lumin.client.modules.Category;
+import dev.lumin.client.modules.Module;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
 
-public class RenderTest extends AbstractModule {
+public class RenderTest extends Module {
 
-    private static RenderTest INSTANCE;
+    public static RenderTest INSTANCE = new RenderTest();
 
     private RenderTest() {
-        super("render_test", Category.VISUAL);
+        super("RenderTest", "渲染测试", Category.VISUAL);
         keyBind = GLFW.GLFW_KEY_U;
-    }
-
-    public static RenderTest getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new RenderTest();
-        }
-        return INSTANCE;
     }
 
     private final RectRenderer rectRenderer = new RectRenderer();

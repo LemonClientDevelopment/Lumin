@@ -1,6 +1,7 @@
 package dev.lumin.client.managers.impl;
 
-import dev.lumin.client.modules.AbstractModule;
+import dev.lumin.client.modules.Module;
+import dev.lumin.client.modules.impl.client.ClickGui;
 import dev.lumin.client.modules.impl.visual.RenderTest;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 public class ModuleManager {
 
     private static ModuleManager INSTANCE = null;
-    private List<AbstractModule> modules;
+    private List<Module> modules;
 
     private ModuleManager() {
         initModules();
@@ -23,8 +24,15 @@ public class ModuleManager {
 
     private void initModules() {
         modules = List.of(
-                /* VISUAL */
-                RenderTest.getInstance()
+                // Combat
+
+                // Movement
+
+                // Visual
+                RenderTest.INSTANCE,
+
+                // Client
+                ClickGui.INSTANCE
         );
     }
 
