@@ -41,10 +41,6 @@ public class Skija {
     public static int getMinecraftFBO() {
         GpuTexture gpuTexture = mc.getMainRenderTarget().getColorTexture();
 
-        if (gpuTexture instanceof ValidationGpuTexture validationTexture) {
-            gpuTexture = validationTexture.getRealTexture();
-        }
-
         if (gpuTexture instanceof GlTexture glTexture) {
             return glTexture.glId();
         }

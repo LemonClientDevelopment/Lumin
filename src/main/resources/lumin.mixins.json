@@ -8,7 +8,8 @@
     "MixinLivingEntity",
     "MixinLivingEntityRenderer",
     "MixinLocalPlayer",
-    "MixinMinecraft"
+    "MixinMinecraft",
+    "MixinWindow"
   ],
   "injectors": {
     "defaultRequire": 1
