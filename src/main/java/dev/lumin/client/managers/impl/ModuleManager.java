@@ -38,7 +38,9 @@ public class ModuleManager {
 
     public void onKeyPress(int keyCode) {
         for (final var module : modules) {
-            if (module.keyBind == keyCode) module.toggle();
+            if (module.keyBind == keyCode) {
+                module.toggle();
+            }
         }
     }
 

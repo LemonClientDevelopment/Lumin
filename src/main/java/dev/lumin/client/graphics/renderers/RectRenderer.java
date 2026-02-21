@@ -7,8 +7,7 @@ import java.awt.*;
 
 public class RectRenderer implements IRenderer {
 
-    private BufferBuilder bufferBuilder = Tesselator.getInstance()
-            .begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+    private BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
     public void addRect(float x, float y, float width, float height, Color color) {
         // CCW

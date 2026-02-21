@@ -1,7 +1,12 @@
 package dev.lumin.client.modules;
 
 import dev.lumin.client.Lumin;
+import dev.lumin.client.settings.AbstractSetting;
+import dev.lumin.client.settings.impl.BoolSetting;
 import net.neoforged.neoforge.common.NeoForge;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Module {
 
@@ -12,12 +17,21 @@ public class Module {
 
     public int keyBind;
 
+    public enum BindMode {Toggle, Hold}
+
+    public BindMode bindMode = BindMode.Toggle;
+
     private boolean enabled;
+
+    public final List<AbstractSetting<?>> settings = new ArrayList<>();
+
+    private final BoolSetting hidden;
 
     public Module(String englishName, String chineseName, Category category) {
         this.englishName = englishName;
         this.chineseName = chineseName;
         this.category = category;
+        addSetting(this.hidden = new BoolSetting("Hidden", "隐藏", false));
     }
 
     public void toggle() {
@@ -49,6 +63,26 @@ public class Module {
         if (enabled != this.enabled) {
             toggle();
         }
+    }
+
+    public void reset() {
+        setEnabled(false);
+        bindMode = BindMode.Toggle;
+        for (AbstractSetting<?> setting : settings) {
+            setting.reset();
+        }
+    }
+
+    private void addSetting(AbstractSetting<?> setting) {
+        settings.add(setting);
+    }
+
+    public boolean isHidden() {
+        return hidden.getValue();
+    }
+
+    public List<AbstractSetting<?>> getSettings() {
+        return settings;
     }
 
 }
