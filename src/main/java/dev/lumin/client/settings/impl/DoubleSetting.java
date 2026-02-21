@@ -1,6 +1,7 @@
 package dev.lumin.client.settings.impl;
 
 import dev.lumin.client.settings.AbstractSetting;
+import net.minecraft.util.Mth;
 
 public class DoubleSetting extends AbstractSetting<Double> {
 
@@ -23,13 +24,7 @@ public class DoubleSetting extends AbstractSetting<Double> {
 
     @Override
     public void setValue(Double value) {
-        if (value < min) {
-            super.setValue(min);
-        } else if (value > max) {
-            super.setValue(max);
-        } else {
-            super.setValue(value);
-        }
+        super.setValue(Mth.clamp(value, min, max));
     }
 
     public double getMin() {
