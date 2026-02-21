@@ -1,12 +1,16 @@
 package dev.lumin.client.graphics.skija;
 
-import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.lumin.client.graphics.skija.util.state.States;
 import io.github.humbleui.skija.*;
 import net.minecraft.client.Minecraft;
-import net.neoforged.neoforge.client.blaze3d.validation.ValidationGpuTexture;
+import net.minecraft.client.renderer.RenderPipelines;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.function.Consumer;
 
 public class Skija {
@@ -20,7 +24,11 @@ public class Skija {
 
     public static Canvas canvas;
 
-    public static void initSkia() {
+    private static int lastFboId = -1;
+    private static int lastWidth = -1;
+    private static int lastHeight = -1;
+
+    public static void initSkia(int fboId, int width, int height) {
         if (context == null) {
             context = DirectContext.makeGL();
         }
@@ -33,37 +41,45 @@ public class Skija {
             renderTarget.close();
         }
 
-        renderTarget = BackendRenderTarget.makeGL(mc.getWindow().getWidth(), mc.getWindow().getHeight(), 0, 8, getMinecraftFBO(), FramebufferFormat.GR_GL_RGBA8);
+        renderTarget = BackendRenderTarget.makeGL(width, height, 0, 8, fboId, FramebufferFormat.GR_GL_RGBA8);
         surface = Surface.wrapBackendRenderTarget(context, renderTarget, SurfaceOrigin.BOTTOM_LEFT, ColorType.RGBA_8888, ColorSpace.getSRGB());
         canvas = surface.getCanvas();
-    }
 
-    public static int getMinecraftFBO() {
-        GpuTexture gpuTexture = mc.getMainRenderTarget().getColorTexture();
-
-        if (gpuTexture instanceof GlTexture glTexture) {
-            return glTexture.glId();
-        }
-
-        return 0;
+        lastFboId = fboId;
+        lastWidth = width;
+        lastHeight = height;
     }
 
     public static void draw(Consumer<Canvas> drawingLogic) {
         if (context == null) {
-            initSkia();
+            context = DirectContext.makeGL();
         }
 
         States.INSTANCE.push();
-        context.resetGLAll();
-        canvas.save();
 
-        float scaleFactor = mc.getWindow().getGuiScale();
-        canvas.scale(scaleFactor, scaleFactor);
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "lumin_skija", mc.getMainRenderTarget().getColorTextureView(), OptionalInt.empty(), null, OptionalDouble.empty())) {
+            renderPass.setPipeline(RenderPipelines.GUI);
 
-        drawingLogic.accept(canvas);
+            int currentFboId = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+            int width = mc.getWindow().getWidth();
+            int height = mc.getWindow().getHeight();
 
-        canvas.restore();
-        context.flush(surface);
+            if (renderTarget == null || currentFboId != lastFboId || width != lastWidth || height != lastHeight) {
+                initSkia(currentFboId, width, height);
+            }
+
+            context.resetGLAll();
+            canvas.save();
+
+            float scaleFactor = (float) mc.getWindow().getGuiScale();
+            canvas.scale(scaleFactor, scaleFactor);
+
+            drawingLogic.accept(canvas);
+
+            canvas.restore();
+            context.flush(surface);
+        }
+
         States.INSTANCE.pop();
     }
 
