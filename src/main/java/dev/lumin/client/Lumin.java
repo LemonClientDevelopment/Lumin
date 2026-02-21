@@ -87,8 +87,6 @@ public class Lumin {
 
     @SubscribeEvent
     static void onClientSetup(FMLClientSetupEvent event) {
-        Skija.initSkia();
-
         Managers.initManagers();
 
         Lumin.LOGGER.info("Lumin initialized");
