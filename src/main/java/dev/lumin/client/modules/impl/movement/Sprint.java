@@ -16,7 +16,8 @@ public class Sprint extends Module {
     }
 
     @SubscribeEvent
-    private void onTick(ClientTickEvent.Pre event) {
+    private void onClientTick(ClientTickEvent.Pre event) {
+        if (nullCheck()) return;
         mc.options.keySprint.setDown(true);
     }
 

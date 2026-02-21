@@ -38,6 +38,10 @@ public class Module {
         mc = Minecraft.getInstance();
     }
 
+    protected boolean nullCheck() {
+        return mc.player == null || mc.level == null;
+    }
+
     protected void onEnable() {
     }
 
