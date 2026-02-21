@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "dev.lumin.client.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MixinMinecraft"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
