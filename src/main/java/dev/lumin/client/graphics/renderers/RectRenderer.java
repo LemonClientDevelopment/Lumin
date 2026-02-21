@@ -11,10 +11,11 @@ public class RectRenderer implements IRenderer {
 
     public void addRect(float x, float y, float width, float height, Color color) {
         // CCW
-        bufferBuilder.addVertex(x, y, 0).setColor(color.getRGB());
-        bufferBuilder.addVertex(x, y + height, 0).setColor(color.getRGB());
-        bufferBuilder.addVertex(x + width, y + height, 0).setColor(color.getRGB());
-        bufferBuilder.addVertex(x + width, y + height, 0).setColor(color.getRGB());
+        int argb = color.getRGB();
+        bufferBuilder.addVertex(x, y, 0).setColor(argb);
+        bufferBuilder.addVertex(x, y + height, 0).setColor(argb);
+        bufferBuilder.addVertex(x + width, y + height, 0).setColor(argb);
+        bufferBuilder.addVertex(x + width, y, 0).setColor(argb);
     }
 
     @Override
