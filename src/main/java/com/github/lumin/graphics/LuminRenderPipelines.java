@@ -1,6 +1,7 @@
 package com.github.lumin.graphics;
 
 import com.github.lumin.utils.resources.ResourceLocationUtils;
+import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.shaders.UniformType;
@@ -32,6 +33,7 @@ public class LuminRenderPipelines {
             .withFragmentShader(ResourceLocationUtils.getIdentifier("ttf_font"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .withSampler("Sampler0")
+            .withBlend(BlendFunction.TRANSLUCENT)
             .withCull(false)
             .build();
 
