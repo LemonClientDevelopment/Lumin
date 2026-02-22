@@ -30,6 +30,7 @@ public class RenderTest extends Module {
 
 
         rectRenderer.drawAndClear();
+        textRenderer.drawAndClear();
 
     }
 
