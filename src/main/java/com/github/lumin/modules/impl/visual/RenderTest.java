@@ -1,16 +1,8 @@
 package com.github.lumin.modules.impl.visual;
 
-import com.github.lumin.graphics.renderers.*;
-import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
-import com.google.common.base.Suppliers;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import org.lwjgl.glfw.GLFW;
-
-import java.awt.*;
-import java.util.function.Supplier;
 
 public class RenderTest extends Module {
 
@@ -21,7 +13,7 @@ public class RenderTest extends Module {
         keyBind = GLFW.GLFW_KEY_U;
     }
 
-    private final Supplier<RectRenderer> rectRendererSupplier = Suppliers.memoize(RectRenderer::new);
+    /*private final Supplier<RectRenderer> rectRendererSupplier = Suppliers.memoize(RectRenderer::new);
     private final Supplier<RoundRectRenderer> roundRectRendererSupplier = Suppliers.memoize(RoundRectRenderer::new);
     private final Supplier<LineRenderer> lineRendererSupplier = Suppliers.memoize(LineRenderer::new);
     private final Supplier<CircleRenderer> circleRendererSupplier = Suppliers.memoize(CircleRenderer::new);
@@ -82,5 +74,5 @@ public class RenderTest extends Module {
     protected void onEnable() {
         startTime = System.currentTimeMillis();
     }
-
+*/
 }

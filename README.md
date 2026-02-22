@@ -1,6 +1,6 @@
 # Lumin Client - ClickGUI 设计文档
 
-**项目名称**: Lumin Visual Client
+**项目名称**: Lumin Client
 **目标平台**: NeoForge 1.21.11
 **文档版本**: v1.0
 **设计风格**: 3D 圆柱滚筒交互 (Cylindrical Roller) + 极简主义 (Minimalist)
