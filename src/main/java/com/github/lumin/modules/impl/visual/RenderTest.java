@@ -1,6 +1,7 @@
 package com.github.lumin.modules.impl.visual;
 
 import com.github.lumin.graphics.renderers.*;
+import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
 import com.google.common.base.Suppliers;
@@ -26,7 +27,6 @@ public class RenderTest extends Module {
     private final Supplier<CircleRenderer> circleRendererSupplier = Suppliers.memoize(CircleRenderer::new);
     private final Supplier<GradientRectRenderer> gradientRectRendererSupplier = Suppliers.memoize(GradientRectRenderer::new);
     private final Supplier<TextRenderer> textRendererSupplier = Suppliers.memoize(TextRenderer::new);
-    private final Supplier<BlurRenderer> blurRendererSupplier = Suppliers.memoize(BlurRenderer::new);
 
     private long startTime = System.currentTimeMillis();
 
@@ -38,7 +38,8 @@ public class RenderTest extends Module {
         CircleRenderer circleRenderer = circleRendererSupplier.get();
         GradientRectRenderer gradientRectRenderer = gradientRectRendererSupplier.get();
         TextRenderer textRenderer = textRendererSupplier.get();
-        BlurRenderer blurRenderer = blurRendererSupplier.get();
+
+        BlurShader.drawRoundedBlur(50, 50, 100, 100, 5, 5);
 
         float baseX = 50;
         float baseY = 50;
