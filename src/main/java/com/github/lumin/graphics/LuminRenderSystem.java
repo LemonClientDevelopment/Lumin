@@ -15,8 +15,8 @@ public class LuminRenderSystem {
 
         RenderSystem.setProjectionMatrix(
                 guiOrthoProjection.getBuffer(
-                        (float)window.getWidth() / window.getGuiScale(),
-                        (float)window.getHeight() / window.getGuiScale()
+                        (float) window.getWidth() / window.getGuiScale(),
+                        (float) window.getHeight() / window.getGuiScale()
                 ),
                 ProjectionType.ORTHOGRAPHIC);
     }

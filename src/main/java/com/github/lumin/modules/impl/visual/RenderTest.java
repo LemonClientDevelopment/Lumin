@@ -26,10 +26,10 @@ public class RenderTest extends Module {
     public void onRenderGui(RenderGuiEvent.Post event) {
 
         rectRenderer.addRect(10, 10, 100, 100, Color.WHITE);
-        textRenderer.addText("What The Fuck", 50, 50, Color.BLACK, 1.0f);
-
-
         rectRenderer.drawAndClear();
+
+
+        textRenderer.addText("What The Fuck", 50, 50, Color.BLACK, 10.0f);
         textRenderer.drawAndClear();
 
     }
