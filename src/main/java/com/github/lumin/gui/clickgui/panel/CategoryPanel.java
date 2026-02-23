@@ -72,14 +72,18 @@ public class CategoryPanel implements IComponent {
         // todo:画icon
         //(category.icon, x + 4 * guiScale + scaledWidth - NanoVGHelper.getTextWidth(category.icon, FontLoader.icons(), iconSize) - (category == Category.Render ? 7 : 3) * guiScale, y + 13f * guiScale, FontLoader.icons(), iconSize, new Color(255, 255, 255, 255));
 
-        roundRectRenderer.drawAndClear();
-        textRenderer.drawAndClear();
+//        roundRectRenderer.drawAndClear();
+//        textRenderer.drawAndClear();
 
         if (opened) {
             for (ModuleComponent component : moduleComponents) {
                 component.render(this.set, mouseX, mouseY, partialTicks);
             }
         }
+
+        set.roundRectRenderer().drawAndClear();
+        set.rectRenderer().drawAndClear();
+        set.textRenderer().drawAndClear();
 
 //        IComponent.super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }

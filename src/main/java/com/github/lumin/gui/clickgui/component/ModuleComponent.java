@@ -78,13 +78,13 @@ public class ModuleComponent implements IComponent {
             float expandedHeight = yOffset - scaledHeight;
             set.rectRenderer().addRect(x, y + scaledHeight, width, expandedHeight, InterFace.INSTANCE.expandedBackgroundColor.getValue());
         }
-        set.rectRenderer().drawAndClear();
+//        set.rectRenderer().drawAndClear();
 
         float nameScale = 0.85f * scale;
         float textHeight = set.textRenderer().getHeight(nameScale);
         float textY = y + (MODULE_HEIGHT * scale - textHeight) / 2f;
         set.textRenderer().addText(module.getDisplayName(), x + 4 * scale, textY, Color.WHITE, nameScale);
-        set.textRenderer().drawAndClear();
+//        set.textRenderer().drawAndClear();
 
         float boxWidth = 18 * scale;
         float boxHeight = 8 * scale;
@@ -141,10 +141,6 @@ public class ModuleComponent implements IComponent {
                 componentYOffset += component.getHeight();
             }
         }
-
-        set.roundRectRenderer().drawAndClear();
-        set.rectRenderer().drawAndClear();
-        set.textRenderer().drawAndClear();
 
 //        IComponent.super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }
