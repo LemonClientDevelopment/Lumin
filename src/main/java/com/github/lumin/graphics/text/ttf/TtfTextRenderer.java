@@ -30,12 +30,12 @@ import java.util.OptionalInt;
 
 public class TtfTextRenderer implements ITextRenderer {
 
-    private static final float DEFAULT_SCALE = 0.35f;
+    private static final float DEFAULT_SCALE = 0.27f;
     private static final float SPACING = 1f;
     private static final int STRIDE = 24;
     private final long bufferSize;
 
-    private final TtfFontLoader fontLoader =
+    private static final TtfFontLoader fontLoader =
             new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/pingfang.ttf"));
 
     private final Map<TtfGlyphAtlas, Batch> batches = new LinkedHashMap<>();
