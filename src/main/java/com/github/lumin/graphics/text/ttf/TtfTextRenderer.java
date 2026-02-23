@@ -161,7 +161,7 @@ public class TtfTextRenderer implements ITextRenderer {
 
             try (GpuBuffer.MappedView mappedView = RenderSystem.getDevice().createCommandEncoder()
                     .mapBuffer(ttfInfoUniformBuf, false, true)) {
-                Std140Builder.intoBuffer(mappedView.data()).putFloat(0.5f);
+                Std140Builder.intoBuffer(mappedView.data()).putFloat(0.475f);
             }
         }
 
