@@ -3,6 +3,7 @@ package com.github.lumin.gui.clickgui.panel;
 import com.github.lumin.graphics.renderers.RectRenderer;
 import com.github.lumin.graphics.renderers.RoundRectRenderer;
 import com.github.lumin.graphics.renderers.TextRenderer;
+import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.gui.IComponent;
 import com.github.lumin.gui.clickgui.component.ModuleComponent;
 import com.github.lumin.managers.Managers;
@@ -47,9 +48,9 @@ public class CategoryPanel implements IComponent {
         float componentOffsetY = 18 * guiScale;
         if (opened) {
             for (ModuleComponent component : moduleComponents) {
-                component.setX(x);
+                component.setX(x + 2 * guiScale);
                 component.setY(y + componentOffsetY);
-                component.setWidth(scaledWidth);
+                component.setWidth(scaledWidth - 4 * guiScale);
                 component.setScale(guiScale);
                 componentOffsetY += component.getHeight();
             }
@@ -57,7 +58,7 @@ public class CategoryPanel implements IComponent {
         height = componentOffsetY + 9 * guiScale;
 
         if (InterFace.INSTANCE.backgroundBlur.getValue() && InterFace.INSTANCE.blurMode.is("OnlyCategory")) {
-//            BlurShader.drawRoundedBlur(x, y - 1, scaledWidth, height, 7.0f, InterFace.INSTANCE.blurStrength.getValue().floatValue());
+            BlurShader.drawRoundedBlur(x, y - 1, scaledWidth, height, 7.0f, InterFace.INSTANCE.blurStrength.getValue().floatValue());
         }
 
         Color bgColor = InterFace.INSTANCE.backgroundColor.getValue();
