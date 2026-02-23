@@ -27,7 +27,7 @@ import java.util.*;
 
 public class TtfTextRenderer implements ITextRenderer {
 
-    private static final float DEFAULT_SCALE = 0.35f;
+    private static final float DEFAULT_SCALE = 0.27f;
     private static final float SPACING = 1f;
     private static final int STRIDE = 24;
     private final long bufferSize;
