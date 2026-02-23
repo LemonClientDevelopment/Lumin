@@ -35,7 +35,7 @@ public class TextureRenderer implements IRenderer {
     private final Map<Identifier, LuminTexture> textureCache = new HashMap<>();
 
     public TextureRenderer() {
-        this(2 * 1024 * 1024);
+        this(32 * 1024);
     }
 
     public TextureRenderer(long bufferSize) {
