@@ -26,12 +26,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.awt.*;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
+import java.util.*;
 
 public class TextureRenderer implements IRenderer {
     private static final int STRIDE = 24;
@@ -62,7 +57,7 @@ public class TextureRenderer implements IRenderer {
     public void addTexture(Identifier texture, float x, float y, float width, float height, float u0, float v0, float u1, float v1, Color color) {
         Batch batch = batches.computeIfAbsent(texture, k -> new Batch(new LuminBuffer(bufferSize, GpuBuffer.USAGE_VERTEX)));
 
-        if (batch.currentOffset + (long)STRIDE * 4L > bufferSize) {
+        if (batch.currentOffset + (long) STRIDE * 4L > bufferSize) {
             return;
         }
 
@@ -81,7 +76,7 @@ public class TextureRenderer implements IRenderer {
         writeToAddr(p + STRIDE * 2L, x2, y2, u1, v1, argb);
         writeToAddr(p + STRIDE * 3L, x2, y1, u1, v0, argb);
 
-        batch.currentOffset += (long)STRIDE * 4L;
+        batch.currentOffset += (long) STRIDE * 4L;
         batch.vertexCount += 4;
     }
 

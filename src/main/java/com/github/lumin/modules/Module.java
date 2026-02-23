@@ -27,7 +27,7 @@ public class Module {
 
     public final List<AbstractSetting<?>> settings = new ArrayList<>();
 
-    private final BoolSetting hidden; // 控制是否在ModuleListHud中显示
+    //private final BoolSetting hidden; // 控制是否在ModuleListHud中显示
 
     protected Minecraft mc;
 
@@ -35,7 +35,7 @@ public class Module {
         this.englishName = englishName;
         this.chineseName = chineseName;
         this.category = category;
-        addSetting(this.hidden = new BoolSetting("Hidden", "隐藏", false));
+        //addSetting(this.hidden = new BoolSetting("Hidden", "隐藏", false));
         mc = Minecraft.getInstance();
     }
 
@@ -97,9 +97,9 @@ public class Module {
         return setting;
     }
 
-    public boolean isHidden() {
-        return hidden.getValue();
-    }
+    //public boolean isHidden() {
+    //    return hidden.getValue();
+    //}
 
     public List<AbstractSetting<?>> getSettings() {
         return settings;

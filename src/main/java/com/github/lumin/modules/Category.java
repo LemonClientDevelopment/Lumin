@@ -2,6 +2,8 @@ package com.github.lumin.modules;
 
 import com.github.lumin.modules.impl.client.InterFace;
 
+import java.util.Locale;
+
 public enum Category {
 
     COMBAT("战斗"),
@@ -17,10 +19,12 @@ public enum Category {
     }
 
     public String getName() {
-        if (InterFace.INSTANCE.language.is("Chinese")) {
+        if (InterFace.isEnglish()) {
+            String lower = name().toLowerCase(Locale.ROOT);
+            return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
+        } else {
             return cnName;
         }
-        return name();
     }
 
 }

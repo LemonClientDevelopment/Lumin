@@ -113,7 +113,39 @@ public class TtfTextRenderer implements ITextRenderer {
 
     @Override
     public float getHeight(float scale) {
-        return fontLoader.fontFile.pixelAscent * DEFAULT_SCALE * scale;
+        return fontLoader.fontFile.fontHeight * DEFAULT_SCALE * scale;
+    }
+
+    @Override
+    public float getWidth(String text, float scale) {
+        fontLoader.checkAndLoadChars(text);
+
+        final var finalScale = scale * DEFAULT_SCALE;
+        float maxLine = 0.0f;
+        float currentLine = 0.0f;
+
+        for (char ch : text.toCharArray()) {
+            switch (ch) {
+                case ' ': {
+                    currentLine += 3.0f * scale;
+                    break;
+                }
+                case '\n': {
+                    maxLine = Math.max(maxLine, currentLine);
+                    currentLine = 0.0f;
+                    break;
+                }
+                default: {
+                    GlyphDescriptor glyph = fontLoader.getGlyph(ch);
+                    if (glyph == null) break;
+                    currentLine += glyph.advance() * finalScale + SPACING * scale;
+                    break;
+                }
+            }
+        }
+
+        maxLine = Math.max(maxLine, currentLine);
+        return maxLine;
     }
 
     @Override

@@ -30,6 +30,10 @@ public class TextRenderer implements IRenderer {
         return textRenderer.getHeight(scale);
     }
 
+    public float getWidth(String text, float scale) {
+        return textRenderer.getWidth(text, scale);
+    }
+
     @Override
     public void draw() {
         LuminRenderSystem.applyOrthoProjection();

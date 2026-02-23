@@ -14,4 +14,6 @@ public interface ITextRenderer {
 
     float getHeight(float scale);
 
+    float getWidth(String text, float scale);
+
 }
