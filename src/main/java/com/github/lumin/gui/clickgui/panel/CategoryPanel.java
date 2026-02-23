@@ -33,7 +33,7 @@ public class CategoryPanel implements IComponent {
     public CategoryPanel(Category category) {
         this.category = category;
         this.opened = true;
-        Managers.MODULE.getModsByCategory(category).forEach(module -> moduleComponents.add(new ModuleComponent(module)));
+        Managers.MODULE.getModules(category).forEach(module -> moduleComponents.add(new ModuleComponent(module)));
     }
 
     @Override

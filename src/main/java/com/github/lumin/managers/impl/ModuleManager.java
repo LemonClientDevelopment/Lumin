@@ -57,7 +57,7 @@ public class ModuleManager {
         }
     }
 
-    public List<Module> getModsByCategory(Category m) {
+    public List<Module> getModules(Category m) {
         return modules.stream()
                 .filter(module -> module.category == m)
                 .sorted(Comparator.comparing(Module::getEnglishName))
