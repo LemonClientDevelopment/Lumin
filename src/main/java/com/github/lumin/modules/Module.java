@@ -1,6 +1,7 @@
 package com.github.lumin.modules;
 
 import com.github.lumin.Lumin;
+import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.settings.AbstractSetting;
 import com.github.lumin.settings.impl.*;
 import net.minecraft.client.Minecraft;
@@ -12,8 +13,8 @@ import java.util.List;
 
 public class Module {
 
-    public String englishName;
-    public String chineseName;
+    private String englishName;
+    private String chineseName;
 
     public Category category;
 
@@ -111,6 +112,18 @@ public class Module {
 
     public void setBindMode(BindMode bindMode) {
         this.bindMode = bindMode;
+    }
+
+    public String getDisplayName() {
+        return InterFace.isEnglish() ? englishName : chineseName;
+    }
+
+    public String getEnglishName() {
+        return englishName;
+    }
+
+    public String getChineseName() {
+        return chineseName;
     }
 
     protected IntSetting intSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step, AbstractSetting.Dependency dependency) {

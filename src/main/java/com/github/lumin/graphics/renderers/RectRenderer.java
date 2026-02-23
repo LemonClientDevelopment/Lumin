@@ -33,6 +33,7 @@ public class RectRenderer implements IRenderer {
      * 垂直渐变
      */
     public void addVerticalGradient(float x, float y, float width, float height, Color top, Color bottom) {
+        // 顺序：左上(top), 左下(bottom), 右下(bottom), 右上(top)
         addRawRect(x, y, width, height, top, bottom, bottom, top);
     }
 

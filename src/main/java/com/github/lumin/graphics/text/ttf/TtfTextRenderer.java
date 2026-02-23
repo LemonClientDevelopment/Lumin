@@ -23,16 +23,19 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.awt.*;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 
 public class TtfTextRenderer implements ITextRenderer {
 
-    private static final float DEFAULT_SCALE = 0.27f;
+    private static final float DEFAULT_SCALE = 0.35f;
     private static final float SPACING = 1f;
     private static final int STRIDE = 24;
     private final long bufferSize;
 
-    private static final TtfFontLoader fontLoader =
+    private final TtfFontLoader fontLoader =
             new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/pingfang.ttf"));
 
     private final Map<TtfGlyphAtlas, Batch> batches = new LinkedHashMap<>();

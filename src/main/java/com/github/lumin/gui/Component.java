@@ -48,10 +48,6 @@ public class Component implements IComponent {
         this.height = height;
     }
 
-    public float getScale() {
-        return scale;
-    }
-
     public void setScale(float scale) {
         this.scale = scale;
     }

@@ -19,8 +19,7 @@ public class EventHandler {
 
     @SubscribeEvent
     static void onKeyPress(InputEvent.Key event) {
-        if (event.getAction() != InputConstants.PRESS) return;
-        Managers.MODULE.onKeyPress(event.getKey());
+        Managers.MODULE.onKeyEvent(event.getKey(), event.getAction());
     }
 
 }

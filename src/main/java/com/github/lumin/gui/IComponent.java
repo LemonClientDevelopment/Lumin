@@ -9,11 +9,11 @@ public interface IComponent {
     default void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float deltaTicks) {
     }
 
-    default boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+    default boolean mouseClicked(MouseButtonEvent event, boolean focused) {
         return false;
     }
 
-    default boolean mouseReleased(MouseButtonEvent click) {
+    default boolean mouseReleased(MouseButtonEvent event) {
         return false;
     }
 
@@ -21,7 +21,7 @@ public interface IComponent {
         return false;
     }
 
-    default boolean keyPressed(KeyEvent input) {
+    default boolean keyPressed(KeyEvent event) {
         return false;
     }
 
