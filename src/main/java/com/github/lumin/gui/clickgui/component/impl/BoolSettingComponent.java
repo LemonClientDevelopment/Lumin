@@ -29,9 +29,9 @@ public class BoolSettingComponent extends Component {
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
         String name = InterFace.isEnglish() ? setting.getEnglishName() : setting.getChineseName();
         float fontScale = 0.8f * scale;
-        float textHeight = set.textRenderer().getHeight(fontScale);
+        float textHeight = set.font().getHeight(fontScale);
         float textY = getY() + (getHeight() - textHeight) / 2f;
-        set.textRenderer().addText(name, getX(), textY, Color.WHITE, fontScale);
+        set.font().addText(name, getX(), textY, Color.WHITE, fontScale);
 
         float boxSize = 7.0f * scale;
         float boxX = getX() + getWidth() - boxSize;
@@ -39,11 +39,11 @@ public class BoolSettingComponent extends Component {
 
         Color onColor = InterFace.getMainColor();
         Color offColor = new Color(255, 255, 255, 40);
-        set.roundRectRenderer().addRoundRect(boxX, boxY, boxSize, boxSize, 2.0f * scale, setting.getValue() ? onColor : offColor);
+        set.topRoundRect().addRoundRect(boxX, boxY, boxSize, boxSize, 2.0f * scale, setting.getValue() ? onColor : offColor);
 
-//        set.roundRectRenderer().drawAndClear();
-//        set.rectRenderer().drawAndClear();
-//        set.textRenderer().drawAndClear();
+//        set.topRoundRect().drawAndClear();
+//        set.middleRect().drawAndClear();
+//        set.font().drawAndClear();
     }
 
     @Override

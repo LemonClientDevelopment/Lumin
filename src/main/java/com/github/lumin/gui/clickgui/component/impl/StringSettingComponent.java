@@ -34,10 +34,10 @@ public class StringSettingComponent extends Component {
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
         String name = InterFace.isEnglish() ? setting.getEnglishName() : setting.getChineseName();
         float fontScale = 0.8f * scale;
-        float textHeight = set.textRenderer().getHeight(fontScale);
+        float textHeight = set.font().getHeight(fontScale);
         float headerH = 12.0f * scale;
         float textY = getY() + (headerH - textHeight) / 2f;
-        set.textRenderer().addText(name, getX(), textY, Color.WHITE, fontScale);
+        set.font().addText(name, getX(), textY, Color.WHITE, fontScale);
 
         float boxW = Math.min(60.0f * scale, getWidth() * 0.55f);
         float boxH = 8.0f * scale;
@@ -46,18 +46,18 @@ public class StringSettingComponent extends Component {
 
         Color base = InterFace.getMainColor();
         Color boxBg = editing ? new Color(base.getRed(), base.getGreen(), base.getBlue(), 120) : new Color(255, 255, 255, 30);
-        set.roundRectRenderer().addRoundRect(boxX, boxY, boxW, boxH, 2.0f * scale, boxBg);
+        set.topRoundRect().addRoundRect(boxX, boxY, boxW, boxH, 2.0f * scale, boxBg);
 
         String text = editing ? editingValue : setting.getValue();
         if (text == null) text = "";
         if (text.length() > 18) text = text.substring(0, 17) + ".";
-        float textW = set.textRenderer().getWidth(text, fontScale);
+        float textW = set.font().getWidth(text, fontScale);
         float valY = boxY + (boxH - textHeight) / 2f;
-        set.textRenderer().addText(text, boxX + (boxW - textW) / 2.0f, valY, Color.WHITE, fontScale);
+        set.font().addText(text, boxX + (boxW - textW) / 2.0f, valY, Color.WHITE, fontScale);
 
-//        set.roundRectRenderer().drawAndClear();
-//        set.rectRenderer().drawAndClear();
-//        set.textRenderer().drawAndClear();
+//        set.topRoundRect().drawAndClear();
+//        set.middleRect().drawAndClear();
+//        set.font().drawAndClear();
     }
 
     @Override

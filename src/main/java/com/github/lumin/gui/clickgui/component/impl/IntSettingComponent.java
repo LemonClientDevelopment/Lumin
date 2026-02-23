@@ -37,12 +37,12 @@ public class IntSettingComponent extends Component {
         String valueText = String.valueOf(setting.getValue());
 
         float fontScale = 0.8f * scale;
-        float textHeight = set.textRenderer().getHeight(fontScale);
+        float textHeight = set.font().getHeight(fontScale);
         float textTopArea = 10.5f * scale;
         float textY = getY() + (textTopArea - textHeight) / 2f;
-        set.textRenderer().addText(name, getX(), textY, Color.WHITE, fontScale);
-        float valueWidth = set.textRenderer().getWidth(valueText, fontScale);
-        set.textRenderer().addText(valueText, getX() + getWidth() - valueWidth, textY, new Color(255, 255, 255, 200), fontScale);
+        set.font().addText(name, getX(), textY, Color.WHITE, fontScale);
+        float valueWidth = set.font().getWidth(valueText, fontScale);
+        set.font().addText(valueText, getX() + getWidth() - valueWidth, textY, new Color(255, 255, 255, 200), fontScale);
 
         float barX = getX();
         float barY = getY() + 10.5f * scale;
@@ -53,11 +53,11 @@ public class IntSettingComponent extends Component {
         pct = Math.min(1.0f, Math.max(0.0f, pct));
 
         Color base = InterFace.getMainColor();
-        set.rectRenderer().addRect(barX, barY, barW, barH, new Color(255, 255, 255, 70));
-        set.rectRenderer().addRect(barX, barY, barW * pct, barH, ColorUtils.applyOpacity(base, 0.8f));
+        set.middleRect().addRect(barX, barY, barW, barH, new Color(255, 255, 255, 70));
+        set.middleRect().addRect(barX, barY, barW * pct, barH, ColorUtils.applyOpacity(base, 0.8f));
 
-//        set.rectRenderer().drawAndClear();
-//        set.textRenderer().drawAndClear();
+//        set.middleRect().drawAndClear();
+//        set.font().drawAndClear();
     }
 
     @Override

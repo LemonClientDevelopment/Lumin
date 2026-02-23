@@ -21,20 +21,19 @@ public class CategoryPanel implements IComponent {
     private float x, y, dragX, dragY;
     private float width = 110, height;
     private final Category category;
-    private boolean dragging, opened;
+    private boolean dragging;
+    private boolean opened = true;
     private final ObjectArrayList<ModuleComponent> moduleComponents = new ObjectArrayList<>();
 
-    private final RectRenderer rectRenderer = new RectRenderer();
-    private final RoundRectRenderer roundRectRenderer = new RoundRectRenderer();
-    private final TextRenderer textRenderer = new TextRenderer();
+    private final RoundRectRenderer bottomRoundRect = new RoundRectRenderer();
+    private final RectRenderer middleRect = new RectRenderer();
+    private final RoundRectRenderer topRoundRect = new RoundRectRenderer();
+    private final TextRenderer font = new TextRenderer();
 
-    private final RendererSet set = new RendererSet(
-            rectRenderer, textRenderer, roundRectRenderer
-    );
+    private final RendererSet set = new RendererSet(bottomRoundRect, middleRect, topRoundRect, font);
 
     public CategoryPanel(Category category) {
         this.category = category;
-        this.opened = true;
         Managers.MODULE.getModules(category).forEach(module -> moduleComponents.add(new ModuleComponent(module)));
     }
 
@@ -62,16 +61,13 @@ public class CategoryPanel implements IComponent {
         }
 
         Color bgColor = InterFace.INSTANCE.backgroundColor.getValue();
-        roundRectRenderer.addRoundRect(x, y - 1, scaledWidth, height, 7, ColorUtils.applyOpacity(bgColor, 0.9f));
+        bottomRoundRect.addRoundRect(x, y - 1, scaledWidth, height, 7, ColorUtils.applyOpacity(bgColor, 0.9f));
         float fontScale = 0.9f * guiScale;
-        float textHeight = textRenderer.getHeight(fontScale);
-        float textWidth = textRenderer.getWidth(category.getName(), fontScale);
+        float textHeight = font.getHeight(fontScale);
+        float textWidth = font.getWidth(category.getName(), fontScale);
         float textY = y + (18f * guiScale - textHeight) / 2f - guiScale;
         float textX = x + (scaledWidth - textWidth) / 2f;
-        textRenderer.addText(category.getName(), textX, textY, Color.WHITE, fontScale);
-
-//        roundRectRenderer.drawAndClear();
-//        textRenderer.drawAndClear();
+        font.addText(category.getName(), textX, textY, Color.WHITE, fontScale);
 
         if (opened) {
             for (ModuleComponent component : moduleComponents) {
@@ -79,9 +75,10 @@ public class CategoryPanel implements IComponent {
             }
         }
 
-        set.roundRectRenderer().drawAndClear();
-        set.rectRenderer().drawAndClear();
-        set.textRenderer().drawAndClear();
+        bottomRoundRect.drawAndClear();
+        middleRect.drawAndClear();
+        topRoundRect.drawAndClear();
+        font.drawAndClear();
 
 //        IComponent.super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }

@@ -1,6 +1,7 @@
 package com.github.lumin.gui.clickgui;
 
 import com.github.lumin.graphics.renderers.RectRenderer;
+import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.gui.clickgui.panel.CategoryPanel;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.impl.client.ClickGui;
@@ -59,7 +60,7 @@ public class ClickGuiScreen extends Screen {
         }
 
         if (InterFace.INSTANCE.backgroundBlur.getValue() && InterFace.INSTANCE.blurMode.is("FullScreen")) {
-//            BlurShader.drawQuadBlur(0, 0, guiW, guiH, InterFace.INSTANCE.blurStrength.getValue().floatValue());
+            BlurShader.drawQuadBlur(0, 0, guiW, guiH, InterFace.INSTANCE.blurStrength.getValue().floatValue());
         }
 
         rectRenderer.addRect(0, 0, guiW, guiH, new Color(18, 18, 18, 110));

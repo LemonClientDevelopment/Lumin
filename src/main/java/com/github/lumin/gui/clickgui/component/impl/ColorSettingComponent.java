@@ -35,16 +35,16 @@ public class ColorSettingComponent extends Component {
 
         String name = InterFace.isEnglish() ? setting.getEnglishName() : setting.getChineseName();
         float fontScale = 0.8f * scale;
-        float textHeight = set.textRenderer().getHeight(fontScale);
+        float textHeight = set.font().getHeight(fontScale);
         float headerH = 12.0f * scale;
         float textY = getY() + (headerH - textHeight) / 2f;
-        set.textRenderer().addText(name, getX(), textY, Color.WHITE, fontScale);
+        set.font().addText(name, getX(), textY, Color.WHITE, fontScale);
 
         Color c = setting.getValue() == null ? Color.WHITE : setting.getValue();
         float boxSize = 7.0f * scale;
         float boxX = getX() + getWidth() - boxSize;
         float boxY = getY() + (12.0f * scale - boxSize) / 2.0f;
-        set.roundRectRenderer().addRoundRect(boxX, boxY, boxSize, boxSize, 2.0f * scale, c);
+        set.topRoundRect().addRoundRect(boxX, boxY, boxSize, boxSize, 2.0f * scale, c);
 
         if (opened) {
             int[] rgba = new int[]{c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()};
@@ -67,10 +67,10 @@ public class ColorSettingComponent extends Component {
                 float barH = 3.0f * scale;
 
                 float labelY = ly + (lineH - textHeight) / 2f;
-                set.textRenderer().addText(labels[i], getX(), labelY, new Color(255, 255, 255, 220), fontScale);
-                set.rectRenderer().addRect(barX, barY, barW, barH, new Color(255, 255, 255, 25));
+                set.font().addText(labels[i], getX(), labelY, new Color(255, 255, 255, 220), fontScale);
+                set.middleRect().addRect(barX, barY, barW, barH, new Color(255, 255, 255, 25));
                 float pct = rgba[i] / 255.0f;
-                set.rectRenderer().addRect(barX, barY, barW * pct, barH, ColorUtils.applyOpacity(trackColors[i], 0.8f));
+                set.middleRect().addRect(barX, barY, barW * pct, barH, ColorUtils.applyOpacity(trackColors[i], 0.8f));
 
                 if (dragging && draggingChannel == i) {
                     int newValue = (int) Math.round(clamp01((mouseX - barX) / barW) * 255.0);
@@ -80,9 +80,9 @@ public class ColorSettingComponent extends Component {
             }
         }
 
-//        set.roundRectRenderer().drawAndClear();
-//        set.rectRenderer().drawAndClear();
-//        set.textRenderer().drawAndClear();
+//        set.topRoundRect().drawAndClear();
+//        set.middleRect().drawAndClear();
+//        set.font().drawAndClear();
     }
 
     @Override

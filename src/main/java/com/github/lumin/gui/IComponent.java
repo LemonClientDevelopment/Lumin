@@ -32,9 +32,10 @@ public interface IComponent {
     }
 
     record RendererSet(
-            RectRenderer rectRenderer,
-            TextRenderer textRenderer,
-            RoundRectRenderer roundRectRenderer
+            RoundRectRenderer bottomRoundRect,
+            RectRenderer middleRect,
+            RoundRectRenderer topRoundRect,
+            TextRenderer font
     ) {
     }
 

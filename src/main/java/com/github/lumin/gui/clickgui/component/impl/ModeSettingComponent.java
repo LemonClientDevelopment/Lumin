@@ -32,14 +32,14 @@ public class ModeSettingComponent extends Component {
 
         String name = InterFace.isEnglish() ? setting.getEnglishName() : setting.getChineseName();
         float fontScale = 0.8f * scale;
-        float textHeight = set.textRenderer().getHeight(fontScale);
+        float textHeight = set.font().getHeight(fontScale);
         float headerH = 12.0f * scale;
         float textY = getY() + (headerH - textHeight) / 2f;
-        set.textRenderer().addText(name, getX(), textY, Color.WHITE, fontScale);
+        set.font().addText(name, getX(), textY, Color.WHITE, fontScale);
 
         String current = setting.getValue();
-        float currentWidth = set.textRenderer().getWidth(current, fontScale);
-        set.textRenderer().addText(current, getX() + getWidth() - currentWidth, textY, new Color(255, 255, 255, 200), fontScale);
+        float currentWidth = set.font().getWidth(current, fontScale);
+        set.font().addText(current, getX() + getWidth() - currentWidth, textY, new Color(255, 255, 255, 200), fontScale);
 
         if (opened) {
             float optionY = getY() + 12.0f * scale;
@@ -47,15 +47,15 @@ public class ModeSettingComponent extends Component {
             for (String mode : setting.getModes()) {
                 boolean selected = mode.equalsIgnoreCase(setting.getValue());
                 Color bg = selected ? new Color(255, 255, 255, 25) : new Color(0, 0, 0, 0);
-                set.rectRenderer().addRect(getX(), optionY, getWidth(), optionH, bg);
+                set.middleRect().addRect(getX(), optionY, getWidth(), optionH, bg);
                 float optionTextY = optionY + (optionH - textHeight) / 2f;
-                set.textRenderer().addText(mode, getX() + 2.0f * scale, optionTextY, Color.WHITE, fontScale);
+                set.font().addText(mode, getX() + 2.0f * scale, optionTextY, Color.WHITE, fontScale);
                 optionY += optionH;
             }
         }
 
-//        set.rectRenderer().drawAndClear();
-//        set.textRenderer().drawAndClear();
+//        set.middleRect().drawAndClear();
+//        set.font().drawAndClear();
     }
 
     @Override

@@ -59,7 +59,9 @@ public class ModuleComponent implements IComponent {
             if (!component.isVisible()) continue;
             hasVisibleSettings = true;
             component.setScale(scale);
-            yOffset += component.getHeight() * 1.0f/*animation*/;
+            if (opened) {
+                yOffset += component.getHeight() * 1.0f/*animation*/;
+            }
         }
 
         if (hasVisibleSettings && opened/*后面改成动画检测，不再检测opened*/) {
@@ -69,22 +71,22 @@ public class ModuleComponent implements IComponent {
         this.height = yOffset;
 
         if (module.isEnabled()) {
-            set.rectRenderer().addHorizontalGradient(x, y, width, scaledHeight, InterFace.getMainColor(), InterFace.getSecondColor());
+            set.middleRect().addHorizontalGradient(x, y, width, scaledHeight, InterFace.getMainColor(), InterFace.getSecondColor());
         }
 
-        set.rectRenderer().addRect(x, y, width, scaledHeight, InterFace.INSTANCE.backgroundColor.getValue());
+        set.middleRect().addRect(x, y, width, scaledHeight, InterFace.INSTANCE.backgroundColor.getValue());
 
         if (/*后面改成动画检测，不再检测opened*/opened && hasVisibleSettings) {
             float expandedHeight = yOffset - scaledHeight;
-            set.rectRenderer().addRect(x, y + scaledHeight, width, expandedHeight, InterFace.INSTANCE.expandedBackgroundColor.getValue());
+            set.middleRect().addRect(x, y + scaledHeight, width, expandedHeight, InterFace.INSTANCE.expandedBackgroundColor.getValue());
         }
-//        set.rectRenderer().drawAndClear();
+//        set.middleRect().drawAndClear();
 
         float nameScale = 0.85f * scale;
-        float textHeight = set.textRenderer().getHeight(nameScale);
+        float textHeight = set.font().getHeight(nameScale);
         float textY = y + (MODULE_HEIGHT * scale - textHeight) / 2f - scale;
-        set.textRenderer().addText(module.getDisplayName(), x + 4 * scale, textY, Color.WHITE, nameScale);
-//        set.textRenderer().drawAndClear();
+        set.font().addText(module.getDisplayName(), x + 4 * scale, textY, Color.WHITE, nameScale);
+//        set.font().drawAndClear();
 
         float boxWidth = 25 * scale;
         float boxHeight = 12 * scale;
@@ -107,32 +109,32 @@ public class ModuleComponent implements IComponent {
             borderColor = ColorUtils.applyOpacity(themeColor, hasKey ? 0.9f : 0.5f);
         }
 
-        set.roundRectRenderer().addRoundRect(boxX, boxY, boxWidth, boxHeight, 2.5f * scale, bgColor);
+        set.topRoundRect().addRoundRect(boxX, boxY, boxWidth, boxHeight, 2.5f * scale, bgColor);
         //drawRoundRectOutline(boxX, boxY, boxWidth, boxHeight, 2 * scale, 0.5f * scale, borderColor);
-//        set.roundRectRenderer().drawAndClear();
+//        set.topRoundRect().drawAndClear();
 
         float fontScale = 0.65f * scale;
         String displayText = listening ? "..." : (hasKey ? getKeyName(keyCode) : "");
         float maxTextWidth = boxWidth - 4 * scale;
-        float textWidth = set.textRenderer().getWidth(displayText, fontScale);
+        float textWidth = set.font().getWidth(displayText, fontScale);
         if (textWidth > maxTextWidth) {
             fontScale = fontScale * (maxTextWidth / textWidth);
             textWidth = maxTextWidth;
         }
         float textX = boxX + (boxWidth - textWidth) / 2;
-        float bindTextHeight = set.textRenderer().getHeight(fontScale);
+        float bindTextHeight = set.font().getHeight(fontScale);
         float bindTextY = boxY + (boxHeight - bindTextHeight) / 2f - scale;
         if (!displayText.isEmpty()) {
-            set.textRenderer().addText(displayText, textX, bindTextY, Color.WHITE, fontScale);
+            set.font().addText(displayText, textX, bindTextY, Color.WHITE, fontScale);
         }
-//        set.textRenderer().drawAndClear();
+//        set.font().drawAndClear();
 
         if (isHold && !listening) {
             float lineWidth = hasKey ? textWidth + scale : 6 * scale;
             float lineX = hasKey ? textX - 0.5f * scale : boxX + (boxWidth - lineWidth) / 2;
             float lineY = boxY + boxHeight - scale;
-            set.rectRenderer().addRect(lineX, lineY, lineWidth, 0.5f * scale, Color.WHITE);
-//            set.rectRenderer().drawAndClear();
+            set.middleRect().addRect(lineX, lineY, lineWidth, 0.5f * scale, Color.WHITE);
+//            set.middleRect().drawAndClear();
         }
 
         if (opened) {
