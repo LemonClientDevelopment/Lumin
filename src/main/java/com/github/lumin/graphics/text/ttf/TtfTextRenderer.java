@@ -23,11 +23,14 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 
 import java.awt.*;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 
 public class TtfTextRenderer implements ITextRenderer {
 
-    private static final float DEFAULT_SCALE = 0.27f;
+    private static final float DEFAULT_SCALE = 0.30f;
     private static final float SPACING = 1f;
     private static final int STRIDE = 24;
     private final long bufferSize;
@@ -82,7 +85,7 @@ public class TtfTextRenderer implements ITextRenderer {
                     k -> new Batch(new LuminBuffer(bufferSize, GpuBuffer.USAGE_VERTEX)));
             batch.flushBufferFlag = true;
             batch.buffer.tryMap();
-            long currentOffset = batch.atlasOffsets;
+            long currentOffset = batch.offsetInAtlas;
 
             float baselineY = yOffset + y + (fontLoader.fontFile.pixelAscent * finalScale);
             float x1 = x + xOffset;
@@ -98,7 +101,7 @@ public class TtfTextRenderer implements ITextRenderer {
             BufferUtils.writeUvRectToAddr(p + STRIDE * 2, x2, y2, glyph.uv().u1(), glyph.uv().v1(), argb);
             BufferUtils.writeUvRectToAddr(p + STRIDE * 3, x2, y1, glyph.uv().u1(), glyph.uv().v0(), argb);
 
-            batch.atlasOffsets = currentOffset + (STRIDE * 4);
+            batch.offsetInAtlas = currentOffset + (STRIDE * 4);
             xOffset += glyph.advance() * finalScale + SPACING * scale;
         }
     }
@@ -174,11 +177,11 @@ public class TtfTextRenderer implements ITextRenderer {
                 luminBuffer.unmap();
             }
             batch.flushBufferFlag = false;
-            long writtenBytes = batch.atlasOffsets;
+            long offsetInAtlas = batch.offsetInAtlas;
 
-            if (writtenBytes == 0) continue;
+            if (offsetInAtlas == 0) continue;
 
-            int vertexCount = (int) (writtenBytes / STRIDE);
+            int vertexCount = (int) (offsetInAtlas / STRIDE);
             int indexCount = (vertexCount / 4) * 6;
 
             RenderSystem.AutoStorageIndexBuffer autoIndices =
@@ -209,7 +212,7 @@ public class TtfTextRenderer implements ITextRenderer {
     public void clear() {
         for (Map.Entry<TtfGlyphAtlas, Batch> entry : batches.entrySet()) {
             final var batch = entry.getValue();
-            batch.atlasOffsets = 0;
+            batch.offsetInAtlas = 0;
             batch.flushBufferFlag = false;
         }
     }
@@ -226,7 +229,7 @@ public class TtfTextRenderer implements ITextRenderer {
 
     private static final class Batch {
         final LuminBuffer buffer;
-        long atlasOffsets;
+        long offsetInAtlas;
         public boolean flushBufferFlag;
 
         private Batch(LuminBuffer buffer) {

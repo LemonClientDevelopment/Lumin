@@ -1,19 +1,21 @@
 package com.github.lumin.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import com.github.lumin.graphics.renderers.RectRenderer;
+import com.github.lumin.graphics.renderers.RoundRectRenderer;
+import com.github.lumin.graphics.renderers.TextRenderer;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 
 public interface IComponent {
-    default void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float deltaTicks) {
+    default void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
     }
 
-    default boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+    default boolean mouseClicked(MouseButtonEvent event, boolean focused) {
         return false;
     }
 
-    default boolean mouseReleased(MouseButtonEvent click) {
+    default boolean mouseReleased(MouseButtonEvent event) {
         return false;
     }
 
@@ -21,11 +23,20 @@ public interface IComponent {
         return false;
     }
 
-    default boolean keyPressed(KeyEvent input) {
+    default boolean keyPressed(KeyEvent event) {
         return false;
     }
 
     default boolean charTyped(CharacterEvent input) {
         return false;
     }
+
+    record RendererSet(
+            RoundRectRenderer bottomRoundRect,
+            RectRenderer middleRect,
+            RoundRectRenderer topRoundRect,
+            TextRenderer font
+    ) {
+    }
+
 }
