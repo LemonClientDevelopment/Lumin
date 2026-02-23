@@ -130,8 +130,6 @@ public class TextureRenderer implements IRenderer {
                 pass.setIndexBuffer(ibo, autoIndices.type());
                 pass.bindTexture("Sampler0", texture.textureView(), texture.sampler());
 
-                ScissorStack.applyToPass(pass);
-
                 pass.drawIndexed(0, 0, indexCount, 1);
             }
         }

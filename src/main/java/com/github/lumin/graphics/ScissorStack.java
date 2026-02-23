@@ -57,10 +57,6 @@ public class ScissorStack {
         return stack.size();
     }
 
-    public static void applyToPass(RenderPass pass) {
-        applyScissor(pass, getCurrent());
-    }
-
     private static void applyScissor(RenderPass pass, ScissorRegion region) {
         if (region == null || region.isEmpty()) {
             pass.disableScissor();

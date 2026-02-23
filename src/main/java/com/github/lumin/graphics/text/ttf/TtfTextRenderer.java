@@ -31,23 +31,16 @@ public class TtfTextRenderer implements ITextRenderer {
     private static final int STRIDE = 24;
     private final long bufferSize;
 
-    private final TtfFontLoader fontLoader;
+    private final TtfFontLoader fontLoader =
+            new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/pingfang.ttf"));
+
     private final Map<TtfGlyphAtlas, LuminBuffer> atlasBuffers = new LinkedHashMap<>();
     private final Map<TtfGlyphAtlas, Long> atlasOffsets = new HashMap<>();
 
     private GpuBuffer ttfInfoUniformBuf = null;
 
-    public TtfTextRenderer(long bufferSize, net.minecraft.resources.Identifier fontId) {
-        this.bufferSize = bufferSize;
-        this.fontLoader = new TtfFontLoader(fontId);
-    }
-
-    public TtfTextRenderer(net.minecraft.resources.Identifier fontId) {
-        this(2 * 1024 * 1024, fontId);
-    }
-
     public TtfTextRenderer(long bufferSize) {
-        this(bufferSize, ResourceLocationUtils.getIdentifier("fonts/pingfang.ttf"));
+        this.bufferSize = bufferSize;
     }
 
     public TtfTextRenderer() {
@@ -168,7 +161,7 @@ public class TtfTextRenderer implements ITextRenderer {
 
             try (GpuBuffer.MappedView mappedView = RenderSystem.getDevice().createCommandEncoder()
                     .mapBuffer(ttfInfoUniformBuf, false, true)) {
-                Std140Builder.intoBuffer(mappedView.data()).putFloat(0.5f);
+                Std140Builder.intoBuffer(mappedView.data()).putFloat(0.475f);
             }
         }
 
@@ -208,8 +201,6 @@ public class TtfTextRenderer implements ITextRenderer {
                 pass.setVertexBuffer(0, luminBuffer.getGpuBuffer());
                 pass.setIndexBuffer(ibo, autoIndices.type());
                 pass.bindTexture("Sampler0", atlas.getTexture().textureView(), atlas.getTexture().sampler());
-
-                ScissorStack.applyToPass(pass);
 
                 pass.drawIndexed(0, 0, indexCount, 1);
             }
