@@ -43,7 +43,10 @@ public class ColorSettingComponent extends Component {
 
         String name = InterFace.isEnglish() ? setting.getEnglishName() : setting.getChineseName();
         float fontScale = 0.8f * scale;
-        textRenderer.addText(name, getX(), getY() + 6.0f * scale, Color.WHITE, fontScale);
+        float textHeight = textRenderer.getHeight(fontScale);
+        float headerH = 12.0f * scale;
+        float textY = getY() + (headerH - textHeight) / 2f;
+        textRenderer.addText(name, getX(), textY, Color.WHITE, fontScale);
 
         Color c = setting.getValue() == null ? Color.WHITE : setting.getValue();
         float boxSize = 7.0f * scale;

@@ -42,7 +42,10 @@ public class StringSettingComponent extends Component {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float deltaTicks) {
         String name = InterFace.isEnglish() ? setting.getEnglishName() : setting.getChineseName();
         float fontScale = 0.8f * scale;
-        textRenderer.addText(name, getX(), getY() + 6.0f * scale, Color.WHITE, fontScale);
+        float textHeight = textRenderer.getHeight(fontScale);
+        float headerH = 12.0f * scale;
+        float textY = getY() + (headerH - textHeight) / 2f;
+        textRenderer.addText(name, getX(), textY, Color.WHITE, fontScale);
 
         float boxW = Math.min(60.0f * scale, getWidth() * 0.55f);
         float boxH = 8.0f * scale;
