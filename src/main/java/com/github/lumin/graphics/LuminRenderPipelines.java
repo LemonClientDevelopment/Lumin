@@ -69,26 +69,6 @@ public class LuminRenderPipelines {
             .withCull(false)
             .build();
 
-    public final static RenderPipeline CIRCLE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
-            .withLocation(ResourceLocationUtils.getIdentifier("pipelines/circle"))
-            .withVertexFormat(LuminVertexFormats.CIRCLE, VertexFormat.Mode.QUADS)
-            .withVertexShader(ResourceLocationUtils.getIdentifier("circle"))
-            .withFragmentShader(ResourceLocationUtils.getIdentifier("circle"))
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .build();
-
-    public final static RenderPipeline GRADIENT_RECT = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
-            .withLocation(ResourceLocationUtils.getIdentifier("pipelines/gradient_rect"))
-            .withVertexFormat(LuminVertexFormats.GRADIENT_RECT, VertexFormat.Mode.QUADS)
-            .withVertexShader(ResourceLocationUtils.getIdentifier("gradient_rect"))
-            .withFragmentShader(ResourceLocationUtils.getIdentifier("gradient_rect"))
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .build();
-
     private final static RenderPipeline.Snippet BLUR_SNIPPET = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
             .withUniform("BlurInfo", UniformType.UNIFORM_BUFFER)
             .withSampler("Sampler0")
@@ -109,8 +89,6 @@ public class LuminRenderPipelines {
         event.registerPipeline(TTF_FONT);
         event.registerPipeline(LINE);
         event.registerPipeline(ROUND_RECT);
-        event.registerPipeline(CIRCLE);
-        event.registerPipeline(GRADIENT_RECT);
         event.registerPipeline(TEXTURE);
         event.registerPipeline(BLUR);
     }

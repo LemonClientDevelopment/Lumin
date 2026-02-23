@@ -40,21 +40,22 @@ public class ClickGuiScreen extends Screen {
         double mouseY = event.y();
         int button = event.button();
 
+        return false;
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-
+        return false;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-
+        return false;
     }
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-
+        return false;
     }
 
     @Override

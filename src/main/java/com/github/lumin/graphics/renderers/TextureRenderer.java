@@ -3,6 +3,7 @@ package com.github.lumin.graphics.renderers;
 import com.github.lumin.graphics.LuminRenderPipelines;
 import com.github.lumin.graphics.LuminRenderSystem;
 import com.github.lumin.graphics.LuminTexture;
+import com.github.lumin.graphics.buffer.BufferUtils;
 import com.github.lumin.graphics.buffer.LuminBuffer;
 import com.github.lumin.utils.resources.ResourceLocationUtils;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -56,6 +57,8 @@ public class TextureRenderer implements IRenderer {
 
     public void addTexture(Identifier texture, float x, float y, float width, float height, float u0, float v0, float u1, float v1, Color color) {
         Batch batch = batches.computeIfAbsent(texture, k -> new Batch(new LuminBuffer(bufferSize, GpuBuffer.USAGE_VERTEX)));
+        batch.buffer.tryMap();
+        batch.flushBufferFlag = true;
 
         if (batch.currentOffset + (long) STRIDE * 4L > bufferSize) {
             return;
@@ -63,30 +66,19 @@ public class TextureRenderer implements IRenderer {
 
         int argb = ARGB.toABGR(color.getRGB());
 
-        float x1 = x;
-        float y1 = y;
         float x2 = x + width;
         float y2 = y + height;
 
         long baseAddr = MemoryUtil.memAddress(batch.buffer.getMappedBuffer());
         long p = baseAddr + batch.currentOffset;
 
-        writeToAddr(p, x1, y1, u0, v0, argb);
-        writeToAddr(p + STRIDE, x1, y2, u0, v1, argb);
-        writeToAddr(p + STRIDE * 2L, x2, y2, u1, v1, argb);
-        writeToAddr(p + STRIDE * 3L, x2, y1, u1, v0, argb);
+        BufferUtils.writeUvRectToAddr(p, x, y, u0, v0, argb);
+        BufferUtils.writeUvRectToAddr(p + STRIDE, x, y2, u0, v1, argb);
+        BufferUtils.writeUvRectToAddr(p + STRIDE * 2L, x2, y2, u1, v1, argb);
+        BufferUtils.writeUvRectToAddr(p + STRIDE * 3L, x2, y, u1, v0, argb);
 
         batch.currentOffset += (long) STRIDE * 4L;
         batch.vertexCount += 4;
-    }
-
-    private void writeToAddr(long p, float x, float y, float u, float v, int color) {
-        MemoryUtil.memPutFloat(p, x);
-        MemoryUtil.memPutFloat(p + 4, y);
-        MemoryUtil.memPutFloat(p + 8, 0.0f);
-        MemoryUtil.memPutFloat(p + 12, u);
-        MemoryUtil.memPutFloat(p + 16, v);
-        MemoryUtil.memPutInt(p + 20, color);
     }
 
     @Override
@@ -115,6 +107,11 @@ public class TextureRenderer implements IRenderer {
             GpuBuffer ibo = autoIndices.getBuffer(indexCount);
 
             LuminTexture texture = textureCache.computeIfAbsent(textureId, this::loadTexture);
+
+            if (batch.flushBufferFlag) {
+                batch.buffer.unmap();
+            }
+            batch.flushBufferFlag = false;
 
             try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                     () -> "Texture Draw",
@@ -174,6 +171,7 @@ public class TextureRenderer implements IRenderer {
         for (Batch batch : batches.values()) {
             batch.currentOffset = 0;
             batch.vertexCount = 0;
+            batch.flushBufferFlag = false;
         }
     }
 
@@ -194,10 +192,10 @@ public class TextureRenderer implements IRenderer {
         final LuminBuffer buffer;
         long currentOffset;
         int vertexCount;
+        public boolean flushBufferFlag;
 
         private Batch(LuminBuffer buffer) {
             this.buffer = buffer;
         }
     }
 }
-

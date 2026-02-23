@@ -15,37 +15,76 @@ import java.util.OptionalInt;
 
 public class RectRenderer implements IRenderer {
     private static final long BUFFER_SIZE = 1024 * 1024;
+    private static final int STRIDE = 16;
+
     private final LuminBuffer buffer = new LuminBuffer(BUFFER_SIZE, GpuBuffer.USAGE_VERTEX);
     private long currentOffset = 0;
     private int vertexCount = 0;
+    private boolean flushBufferFlag = false;
 
+    /**
+     * 基础矩形
+     */
     public void addRect(float x, float y, float width, float height, Color color) {
-        int argb = ARGB.toABGR(color.getRGB());
+        addRawRect(x, y, width, height, color, color, color, color);
+    }
 
-        addVertex(x, y, argb);
-        addVertex(x, y + height, argb);
-        addVertex(x + width, y + height, argb);
-        addVertex(x + width, y, argb);
+    /**
+     * 垂直渐变
+     */
+    public void addVerticalGradient(float x, float y, float width, float height, Color top, Color bottom) {
+        // 顺序：左上(top), 左下(bottom), 右下(bottom), 右上(top)
+        addRawRect(x, y, width, height, top, bottom, bottom, top);
+    }
+
+    /**
+     * 水平渐变
+     */
+    public void addHorizontalGradient(float x, float y, float width, float height, Color left, Color right) {
+        addRawRect(x, y, width, height, left, left, right, right);
+    }
+
+    /**
+     * 左上 左下 右下 右上
+     */
+    public void addRawRect(float x, float y, float w, float h, Color c1, Color c2, Color c3, Color c4) {
+        buffer.tryMap();
+        flushBufferFlag = true;
+
+        int argb1 = ARGB.toABGR(c1.getRGB());
+        int argb2 = ARGB.toABGR(c2.getRGB());
+        int argb3 = ARGB.toABGR(c3.getRGB());
+        int argb4 = ARGB.toABGR(c4.getRGB());
+
+        addVertex(x, y, argb1);
+        addVertex(x, y + h, argb2);
+        addVertex(x + w, y + h, argb3);
+        addVertex(x + w, y, argb4);
     }
 
     private void addVertex(float vx, float vy, int color) {
         long baseAddr = MemoryUtil.memAddress(buffer.getMappedBuffer());
         long p = baseAddr + currentOffset;
 
+        // Position: float x, y, z (12 bytes)
         MemoryUtil.memPutFloat(p, vx);
         MemoryUtil.memPutFloat(p + 4, vy);
         MemoryUtil.memPutFloat(p + 8, 0.0f);
+
+        // Color: int abgr (4 bytes)
         MemoryUtil.memPutInt(p + 12, color);
 
-        currentOffset += 16;
+        currentOffset += STRIDE;
         vertexCount++;
     }
 
     @Override
     public void draw() {
         if (vertexCount == 0) return;
-        LuminRenderSystem.QuadRenderingInfo info = LuminRenderSystem.prepareQuadRendering(vertexCount);
+        if (flushBufferFlag) buffer.unmap();
+        flushBufferFlag = false;
 
+        LuminRenderSystem.QuadRenderingInfo info = LuminRenderSystem.prepareQuadRendering(vertexCount);
         if (info == null) return;
 
         if (info.target().getColorTextureView() == null) return;
@@ -69,6 +108,7 @@ public class RectRenderer implements IRenderer {
     public void clear() {
         vertexCount = 0;
         currentOffset = 0;
+        flushBufferFlag = false;
     }
 
     @Override

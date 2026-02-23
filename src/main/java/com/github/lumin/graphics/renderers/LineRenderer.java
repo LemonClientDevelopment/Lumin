@@ -22,22 +22,30 @@ public class LineRenderer implements IRenderer {
     private final LuminBuffer buffer = new LuminBuffer(BUFFER_SIZE, GpuBuffer.USAGE_VERTEX);
     private long currentOffset = 0;
     private int vertexCount = 0;
+    private boolean flushBufferFlag = false;
 
     public void addLine(float x1, float y1, float x2, float y2, float lineWidth, Color color) {
-        int argb = ARGB.toABGR(color.getRGB());
+        buffer.tryMap();
+        flushBufferFlag = true;
 
+        int argb = ARGB.toABGR(color.getRGB());
         addVertex(x1, y1, argb);
         addVertex(x2, y2, argb);
     }
 
     public void addLine(float x1, float y1, float z1, float x2, float y2, float z2, Color color) {
-        int argb = ARGB.toABGR(color.getRGB());
+        buffer.tryMap();
+        flushBufferFlag = true;
 
+        int argb = ARGB.toABGR(color.getRGB());
         addVertex(x1, y1, z1, argb);
         addVertex(x2, y2, z2, argb);
     }
 
     public void addLines(float[] vertices, int[] colors) {
+        buffer.tryMap();
+        flushBufferFlag = true;
+
         for (int i = 0; i < vertices.length / 3; i++) {
             addVertex(
                     vertices[i * 3],
@@ -75,6 +83,11 @@ public class LineRenderer implements IRenderer {
     @Override
     public void draw() {
         if (vertexCount < 2) return;
+
+        if (flushBufferFlag) {
+            buffer.unmap();
+        }
+        flushBufferFlag = false;
 
         LuminRenderSystem.applyOrthoProjection();
 
@@ -114,6 +127,7 @@ public class LineRenderer implements IRenderer {
     public void clear() {
         vertexCount = 0;
         currentOffset = 0;
+        flushBufferFlag = false;
     }
 
     @Override

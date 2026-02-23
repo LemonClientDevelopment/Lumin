@@ -17,8 +17,12 @@ public class RoundRectRenderer implements IRenderer {
 
     private static final long BUFFER_SIZE = 2 * 1024 * 1024;
     private final LuminBuffer buffer = new LuminBuffer(BUFFER_SIZE, GpuBuffer.USAGE_VERTEX);
+    private boolean flushBufferFlag = false;
 
     public void addRoundRect(float x, float y, float width, float height, float radius, Color color) {
+        buffer.tryMap();
+        flushBufferFlag = true;
+
         float x2 = x + width;
         float y2 = y + height;
 
@@ -66,6 +70,11 @@ public class RoundRectRenderer implements IRenderer {
         if (info == null) return;
         if (info.target().getColorTextureView() == null) return;
 
+        if (flushBufferFlag) {
+            buffer.unmap();
+        }
+        flushBufferFlag = false;
+
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Round Rect Draw",
                 info.target().getColorTextureView(), OptionalInt.empty(),
@@ -86,6 +95,7 @@ public class RoundRectRenderer implements IRenderer {
     public void clear() {
         vertexCount = 0;
         currentOffset = 0;
+        flushBufferFlag = false;
     }
 
     @Override
