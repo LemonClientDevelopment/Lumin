@@ -8,8 +8,7 @@ flat in float f_Radius;
 layout(location = 0) out vec4 fragColor;
 
 float aastep(float x) {
-    vec2 grad = vec2(dFdx(x), dFdy(x));
-    float afwidth = 0.7 * length(grad);
+    float afwidth = fwidth(x);
     return smoothstep(-afwidth, afwidth, x);
 }
 

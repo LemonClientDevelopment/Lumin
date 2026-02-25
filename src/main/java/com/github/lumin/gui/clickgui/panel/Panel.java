@@ -34,7 +34,7 @@ public class Panel implements IComponent {
         float screenWidth = mc.getWindow().getGuiScaledWidth();
         float screenHeight = mc.getWindow().getGuiScaledHeight();
 
-        float width = screenWidth * 0.7f; // 占比为屏幕的70%
+        float width = screenWidth / 2f; // 占比为屏幕的 1/2
         float height = width * 9.0f / 16.0f; // 16:9
 
         float x = screenWidth / 2.0f - width / 2.0f;

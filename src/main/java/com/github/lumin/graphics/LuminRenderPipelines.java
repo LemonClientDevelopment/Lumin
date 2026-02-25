@@ -48,17 +48,6 @@ public class LuminRenderPipelines {
             .withCull(false)
             .build();
 
-    public final static RenderPipeline TEXTURE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
-            .withLocation(ResourceLocationUtils.getIdentifier("pipelines/texture"))
-            .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
-            .withVertexShader(ResourceLocationUtils.getIdentifier("texture"))
-            .withFragmentShader(ResourceLocationUtils.getIdentifier("texture"))
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withSampler("Sampler0")
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .build();
-
     public final static RenderPipeline ROUND_RECT = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
             .withLocation(ResourceLocationUtils.getIdentifier("pipelines/round_rectangle"))
             .withVertexFormat(LuminVertexFormats.ROUND_RECT, VertexFormat.Mode.QUADS)
@@ -69,17 +58,13 @@ public class LuminRenderPipelines {
             .withCull(false)
             .build();
 
-    private final static RenderPipeline.Snippet BLUR_SNIPPET = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
-            .withUniform("BlurInfo", UniformType.UNIFORM_BUFFER)
-            .withSampler("Sampler0")
-            .buildSnippet();
-
-    public final static RenderPipeline BLUR = RenderPipeline.builder(BLUR_SNIPPET)
-            .withLocation(ResourceLocationUtils.getIdentifier("pipelines/blur"))
-            .withVertexFormat(LuminVertexFormats.BLUR, VertexFormat.Mode.QUADS)
-            .withVertexShader(ResourceLocationUtils.getIdentifier("blur"))
-            .withFragmentShader(ResourceLocationUtils.getIdentifier("blur"))
+    public final static RenderPipeline TEXTURE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
+            .withLocation(ResourceLocationUtils.getIdentifier("pipelines/texture"))
+            .withVertexFormat(LuminVertexFormats.TEXTURE, VertexFormat.Mode.QUADS)
+            .withVertexShader(ResourceLocationUtils.getIdentifier("texture"))
+            .withFragmentShader(ResourceLocationUtils.getIdentifier("texture"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withSampler("Sampler0")
             .withBlend(BlendFunction.TRANSLUCENT)
             .withCull(false)
             .build();
@@ -90,7 +75,6 @@ public class LuminRenderPipelines {
         event.registerPipeline(LINE);
         event.registerPipeline(ROUND_RECT);
         event.registerPipeline(TEXTURE);
-        event.registerPipeline(BLUR);
     }
 
 }

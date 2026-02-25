@@ -12,6 +12,8 @@ import java.awt.*;
 
 public class Sidebar implements IComponent {
 
+    private final Minecraft mc = Minecraft.getInstance();
+
     private float x, y, width, height;
 
     public void setBounds(float x, float y, float width, float height) {
@@ -33,25 +35,29 @@ public class Sidebar implements IComponent {
         Color color = new Color(25, 25, 25, 220);
         set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, color);
 
-        if (Minecraft.getInstance().player != null) {
-            var player = Minecraft.getInstance().player;
-            var skin = player.getSkin().body();
+        if (mc.player != null) {
+            var skin = mc.player.getSkin().body();
 
             float padding = 12 * guiScale;
             float headSize = 32 * guiScale;
             float headX = x + padding;
             float headY = y + padding;
 
+            // Outline
+            float outline = 0.5f * guiScale;
+            set.bottomRoundRect().addRoundRect(headX - outline, headY - outline, headSize + outline * 2, headSize + outline * 2, radius + outline, Color.WHITE);
+
             // Face
             set.bottomRoundRect().addRoundRect(headX, headY, headSize, headSize, radius, Color.WHITE);
-            set.texture().addTexture(skin.texturePath(), headX, headY, headSize, headSize, 0.125f, 0.125f, 0.25f, 0.25f, Color.WHITE);
+            set.texture().addRoundedTexture(skin.texturePath(), headX, headY, headSize, headSize, radius, 0.125f, 0.125f, 0.25f, 0.25f, Color.WHITE);
 
             float textX = headX + headSize + 6 * guiScale;
             float nameY = headY * guiScale;
             float accountY = nameY + 20 * guiScale;
 
-            set.font().addText(player.getName().getString(), textX, nameY, Color.WHITE, guiScale * 1.5f);
+            set.font().addText(mc.player.getName().getString(), textX, nameY, Color.WHITE, guiScale * 1.5f);
             set.font().addText("Account", textX, accountY, Color.GRAY, guiScale * 0.7f);
+
         }
     }
 
@@ -74,4 +80,5 @@ public class Sidebar implements IComponent {
     public boolean charTyped(CharacterEvent event) {
         return false;
     }
+
 }
