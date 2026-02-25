@@ -2,6 +2,7 @@ package com.github.lumin.managers.impl;
 
 import com.github.lumin.modules.Module;
 import com.github.lumin.modules.impl.client.*;
+import com.github.lumin.modules.impl.combat.KillAura;
 import com.github.lumin.modules.impl.movement.Sprint;
 import com.github.lumin.modules.impl.visual.RenderTest;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -36,7 +37,8 @@ public class ModuleManager {
                 Test666.INSTANCE,
                 TestA.INSTANCE,
                 TestB.INSTANCE,
-                TestC.INSTANCE
+                TestC.INSTANCE,
+                KillAura.INSTANCE
         );
     }
 
