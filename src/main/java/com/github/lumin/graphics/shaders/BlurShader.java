@@ -23,8 +23,12 @@ public class BlurShader {
         drawRoundedBlur(x, y, width, height, radius, new Color(0, 0, 0, 0), blurStrength, blurOpacity);
     }
 
-    public static void drawRoundedBlur(float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
+    public static void drawRoundedBlur(float x, float y, float width, float height, float rTL, float rTR, float rBR, float rBL, Color c1, float blurStrenth, float blurOpacity) {
         blurOpacity = Math.max(0f, Math.min(1f, blurOpacity));
-        BLUR_PROGRAM.render(x, y, width, height, radius, c1, blurStrenth, blurOpacity);
+        BLUR_PROGRAM.render(x, y, width, height, rTL, rTR, rBR, rBL, c1, blurStrenth, blurOpacity);
+    }
+
+    public static void drawRoundedBlur(float x, float y, float width, float height, float radius, Color c1, float blurStrenth, float blurOpacity) {
+        drawRoundedBlur(x, y, width, height, radius, radius, radius, radius, c1, blurStrenth, blurOpacity);
     }
 }

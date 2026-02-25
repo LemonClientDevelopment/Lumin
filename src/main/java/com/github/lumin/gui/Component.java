@@ -1,15 +1,17 @@
 package com.github.lumin.gui;
 
+import com.github.lumin.utils.render.MouseUtils;
+
 public class Component implements IComponent {
     private float x, y, width, height;
     protected float scale = 1.0f;
 
     public boolean isHovered(float mouseX, float mouseY) {
-        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+        return MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
     }
 
     public boolean isHovered(float mouseX, float mouseY, float height) {
-        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+        return MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
     }
 
     public boolean isVisible() {

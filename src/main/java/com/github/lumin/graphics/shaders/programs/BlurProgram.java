@@ -89,7 +89,7 @@ public class BlurProgram {
         };
     }
 
-    public void render(float x, float y, float width, float height, float radius, Color color, float blurStrength, float blurOpacity) {
+    public void render(float x, float y, float width, float height, float rTL, float rTR, float rBR, float rBL, Color color, float blurStrength, float blurOpacity) {
         this.ensureProgram();
 
         if (this.pipeline == null || this.uniforms == null) {
@@ -114,7 +114,11 @@ public class BlurProgram {
         float pxW = width * scale;
         float pxH = height * scale;
 
-        float rPx = Math.max(0.0f, radius * scale);
+        float rTLPx = Math.max(0.0f, rTL * scale);
+        float rTRPx = Math.max(0.0f, rTR * scale);
+        float rBRPx = Math.max(0.0f, rBR * scale);
+        float rBLPx = Math.max(0.0f, rBL * scale);
+
         float quality = Math.max(0.0f, blurStrength);
         float alpha = Math.max(0.0f, Math.min(1.0f, blurOpacity));
 
@@ -131,7 +135,7 @@ public class BlurProgram {
             builder.putVec4(framebuffer.width, framebuffer.height, quality, alpha);
             builder.putVec4(pxW, pxH, pxX, pxY);
             builder.putVec4(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, 1.0f);
-            builder.putVec4(rPx, 0.0f, 0.0f, 0.0f);
+            builder.putVec4(rTLPx, rTRPx, rBRPx, rBLPx);
         }
 
         int paddingPx = (int) Math.ceil(10.0f * scale);

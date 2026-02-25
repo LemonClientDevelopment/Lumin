@@ -5,13 +5,23 @@ layout(std140) uniform BlurUniforms {
     vec4 Params1;
     vec4 Params2;
     vec4 Color1;
-    vec4 Params3;
+    vec4 Params3; // Radii: TL, TR, BR, BL
 };
 
 out vec4 fragColor;
 
-float roundedBoxSDF(vec2 center, vec2 size, float radius) {
-    return length(max(abs(center) - size + radius, 0.0)) - radius;
+float roundedBoxSDF(vec2 center, vec2 size, vec4 r) {
+    // p.x > 0: Right, p.y > 0: Bottom (assuming center is 0,0)
+    // r order: TL, TR, BR, BL
+    
+    // Select based on quadrant
+    // x>0 ? (TR, BR) : (TL, BL)
+    vec2 r_side = (center.x > 0.0) ? r.yz : r.xw;
+    // y>0 ? Bottom : Top
+    float radius = (center.y > 0.0) ? r_side.y : r_side.x;
+
+    vec2 q = abs(center) - size + radius;
+    return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - radius;
 }
 
 vec4 blur() {
@@ -39,10 +49,26 @@ vec4 blur() {
 void main() {
     vec2 uSize = Params2.xy;
     vec2 uLocation = Params2.zw;
-    float radius = Params3.x;
+    vec4 radii = Params3; // TL, TR, BR, BL
     float Brightness = Params1.w;
 
     vec2 halfSize = uSize / 2.0;
-    float smoothedAlpha = (1.0 - smoothstep(0.0, 1.0, roundedBoxSDF(gl_FragCoord.xy - uLocation - halfSize, halfSize, radius)));
+    
+    // Check coordinate system.
+    // In BlurProgram:
+    // pxY = (-y + mc.getWindow().getGuiScaledHeight() - height) * scale;
+    // uLocation.y = pxY;
+    // This implies uLocation is Bottom-Left in OpenGL coords?
+    // If gl_FragCoord is (0,0) at BL.
+    // If we want consistent behavior with RoundRectRenderer (where we handled quadrants).
+    
+    // Let's assume standard behavior:
+    // gl_FragCoord is pixel pos.
+    // uLocation is BL corner of the rect.
+    // Center = uLocation + halfSize.
+    
+    float dist = roundedBoxSDF(gl_FragCoord.xy - uLocation - halfSize, halfSize, radii);
+    
+    float smoothedAlpha = (1.0 - smoothstep(0.0, 1.0, dist));
     fragColor = vec4(blur().rgb, smoothedAlpha * Brightness);
 }

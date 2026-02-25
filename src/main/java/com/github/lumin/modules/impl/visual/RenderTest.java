@@ -1,6 +1,9 @@
 package com.github.lumin.modules.impl.visual;
 
-import com.github.lumin.graphics.renderers.*;
+import com.github.lumin.graphics.renderers.LineRenderer;
+import com.github.lumin.graphics.renderers.RectRenderer;
+import com.github.lumin.graphics.renderers.RoundRectRenderer;
+import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
 import com.google.common.base.Suppliers;

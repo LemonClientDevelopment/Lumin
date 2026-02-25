@@ -20,24 +20,29 @@ public class RoundRectRenderer implements IRenderer {
     private boolean flushBufferFlag = false;
 
     public void addRoundRect(float x, float y, float width, float height, float radius, Color color) {
+        addRoundRect(x, y, width, height, radius, radius, radius, radius, color);
+    }
+
+    public void addRoundRect(float x, float y, float width, float height, float rTL, float rTR, float rBR, float rBL, Color color) {
         buffer.tryMap();
         flushBufferFlag = true;
 
         float x2 = x + width;
         float y2 = y + height;
 
-        float expand = radius + 1.0f;
-        float vx1 = x + expand;
-        float vy1 = y + expand;
-        float vx2 = x2 - expand;
-        float vy2 = y2 - expand;
-
         int argb = color.getRGB();
 
-        addVertex(x, y, vx1, vy1, vx2, vy2, radius, argb);
-        addVertex(x, y2, vx1, vy1, vx2, y2, radius, argb);
-        addVertex(x2, y2, vx1, vy1, vx2, vy2, radius, argb);
-        addVertex(x2, y, vx1, vy1, vx2, vy2, radius, argb);
+        float radius = Math.max(Math.max(rTL, rTR), Math.max(rBR, rBL));
+
+        float innerX1 = x + (Math.max(rTL, rBL) > 0 ? radius : 0);
+        float innerY1 = y + (Math.max(rTL, rTR) > 0 ? radius : 0);
+        float innerX2 = x2 - (Math.max(rTR, rBR) > 0 ? radius : 0);
+        float innerY2 = y2 - (Math.max(rBL, rBR) > 0 ? radius : 0);
+
+        addVertex(x, y, innerX1, innerY1, innerX2, innerY2, radius, argb);
+        addVertex(x, y2, innerX1, innerY1, innerX2, innerY2, radius, argb);
+        addVertex(x2, y2, innerX1, innerY1, innerX2, innerY2, radius, argb);
+        addVertex(x2, y, innerX1, innerY1, innerX2, innerY2, radius, argb);
     }
 
     public void addRoundRectBloom(float x, float y, float width, float height, float radius, float glowRadius, Color color) {
@@ -60,7 +65,8 @@ public class RoundRectRenderer implements IRenderer {
             int a = (int) (currentAlpha * 255.0f);
             Color glowColor = new Color(r, g, b, a);
 
-            addRoundRect(x - offset, y - offset, width + offset * 2, height + offset * 2, radius + offset, glowColor);
+            float currentRadius = radius + offset;
+            addRoundRect(x - offset, y - offset, width + offset * 2, height + offset * 2, currentRadius, glowColor);
         }
     }
 
@@ -71,24 +77,28 @@ public class RoundRectRenderer implements IRenderer {
     private long currentOffset = 0;
     private int vertexCount = 0;
 
-    private void addVertex(float vx, float vy, float x1, float y1, float x2, float y2, float radius, int color) {
+    private void addVertex(float vx, float vy, float ix1, float iy1, float ix2, float iy2, float radius, int color) {
         long baseAddr = MemoryUtil.memAddress(buffer.getMappedBuffer());
         long p = baseAddr + currentOffset;
 
+        // Position (12 bytes)
         MemoryUtil.memPutFloat(p, vx);
         MemoryUtil.memPutFloat(p + 4, vy);
         MemoryUtil.memPutFloat(p + 8, 0.0f);
 
+        // Color (4 bytes)
         MemoryUtil.memPutInt(p + 12, ARGB.toABGR(color));
 
-        MemoryUtil.memPutFloat(p + 16, x1);
-        MemoryUtil.memPutFloat(p + 20, y1);
-        MemoryUtil.memPutFloat(p + 24, x2);
-        MemoryUtil.memPutFloat(p + 28, y2);
+        // InnerRect (16 bytes)
+        MemoryUtil.memPutFloat(p + 16, ix1);
+        MemoryUtil.memPutFloat(p + 20, iy1);
+        MemoryUtil.memPutFloat(p + 24, ix2);
+        MemoryUtil.memPutFloat(p + 28, iy2);
 
+        // Radius (4 bytes)
         MemoryUtil.memPutFloat(p + 32, radius);
 
-        currentOffset += 36;
+        currentOffset += 36; // Stride 36 (12+4+16+4)
         vertexCount++;
     }
 
