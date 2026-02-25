@@ -1,16 +1,12 @@
 package com.github.lumin.managers.impl;
 
-import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
-import com.github.lumin.modules.impl.client.ClickGui;
-import com.github.lumin.modules.impl.client.InterFace;
+import com.github.lumin.modules.impl.client.*;
 import com.github.lumin.modules.impl.movement.Sprint;
 import com.github.lumin.modules.impl.visual.RenderTest;
 import com.mojang.blaze3d.platform.InputConstants;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ModuleManager {
     private List<Module> modules;
@@ -31,19 +27,15 @@ public class ModuleManager {
 
                 // Client
                 ClickGui.INSTANCE,
-                InterFace.INSTANCE
+                InterFace.INSTANCE,
+                Test1.INSTANCE,
+                Test2.INSTANCE,
+                Test3.INSTANCE
         );
     }
 
     public List<Module> getModules() {
         return modules;
-    }
-
-    public List<Module> getModulesByCategory(Category m) {
-        return modules.stream()
-                .filter(module -> module.category == m)
-                .sorted(Comparator.comparing(Module::getEnglishName))
-                .collect(Collectors.toList());
     }
 
     public void onKeyEvent(int keyCode, int action) {
