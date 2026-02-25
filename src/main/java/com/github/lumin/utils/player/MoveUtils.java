@@ -1,13 +1,13 @@
 package com.github.lumin.utils.player;
 
 import com.github.lumin.mixins.IClientInput;
-import com.github.lumin.utils.math.MathUtil;
+import com.github.lumin.utils.math.MathUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 
-public class MoveUtil {
+public class MoveUtils {
 
     static Minecraft mc = Minecraft.getInstance();
 
@@ -67,7 +67,7 @@ public class MoveUtil {
                 if (predictedStrafe == 0 && predictedForward == 0) continue;
 
                 final double predictedAngle = Mth.wrapDegrees(Math.toDegrees(getDirection(yaw, predictedForward, predictedStrafe)));
-                final double difference = MathUtil.wrappedDifference(angle, predictedAngle);
+                final double difference = MathUtils.wrappedDifference(angle, predictedAngle);
 
                 if (difference < closestDifference) {
                     closestDifference = (float) difference;

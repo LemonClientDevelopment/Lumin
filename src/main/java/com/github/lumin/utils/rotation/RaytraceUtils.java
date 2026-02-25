@@ -13,7 +13,7 @@ import org.joml.Vector2f;
 
 import java.util.function.Predicate;
 
-public class RaytraceUtil {
+public class RaytraceUtils {
 
     static Minecraft mc = Minecraft.getInstance();
 

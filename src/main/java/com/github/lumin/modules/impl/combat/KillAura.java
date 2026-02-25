@@ -6,8 +6,9 @@ import com.github.lumin.modules.Module;
 import com.github.lumin.settings.impl.BoolSetting;
 import com.github.lumin.settings.impl.DoubleSetting;
 import com.github.lumin.settings.impl.ModeSetting;
+import com.github.lumin.utils.math.MathUtils;
 import com.github.lumin.utils.rotation.MovementFix;
-import com.github.lumin.utils.rotation.RotationUtil;
+import com.github.lumin.utils.rotation.RotationUtils;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -60,7 +61,7 @@ public class KillAura extends Module {
 
     @SubscribeEvent
     public void onTick(ClientTickEvent.Pre e) {
-        if (mc.player == null || mc.level == null) return;
+        if (nullCheck()) return;
         targets.clear();
         getTargets();
 
@@ -77,11 +78,11 @@ public class KillAura extends Module {
         } else if (targetMode.is("Multi")) {
             target = targets.getFirst();
         }
-        float f = cps.getValue().floatValue();
-        attacks += f / 20f;
+
+        attacks += MathUtils.getRandom(cps.getValue().floatValue(), maxCps.getValue().floatValue()) / 20f;
 
         if (target != null) {
-            float[] rotations = RotationUtil.getRotationsToEntity(target);
+            float[] rotations = RotationUtils.getRotationsToEntity(target);
             boolean silent = movefix.is("Silent");
             Managers.ROTATION.setRotations(new Vector2f(rotations[0], rotations[1]), speed.getValue().floatValue(), MovementFix.TRADITIONAL);
         }
@@ -89,20 +90,20 @@ public class KillAura extends Module {
 
     @SubscribeEvent
     public void onClick(ClientTickEvent.Pre e) {
-        if (mc.player == null || mc.level == null) return;
+        if (nullCheck()) return;
         if (target == null) return;
         if (mc.player.isUsingItem() || mc.player.isBlocking()) return;
         if (mc.player.getAttackStrengthScale(0.5f) < 1.0f && cooldownATK.getValue()) return;
         while (attacks >= 1) {
             if (targetMode.is("Multi")) {
                 for (LivingEntity t : targets) {
-                    if (RotationUtil.getEyeDistanceToEntity(t) <= range.getValue() && mc.hitResult.getType() == HitResult.Type.ENTITY) {
+                    if (RotationUtils.getEyeDistanceToEntity(t) <= range.getValue() && mc.hitResult.getType() == HitResult.Type.ENTITY) {
                         doAttack();
                     }
                 }
                 switchIndex++;
             } else {
-                if (RotationUtil.getEyeDistanceToEntity(target) <= range.getValue() && mc.hitResult.getType() == HitResult.Type.ENTITY && mc.crosshairPickEntity.is(target)) {
+                if (RotationUtils.getEyeDistanceToEntity(target) <= range.getValue() && mc.hitResult.getType() == HitResult.Type.ENTITY && mc.crosshairPickEntity.is(target)) {
                     doAttack();
                     if (targetMode.is("Switch")) switchIndex++;
                 } else if (targetMode.is("Switch")) {
@@ -125,15 +126,15 @@ public class KillAura extends Module {
             if (!living.isAlive() || living.isDeadOrDying()) continue;
             //      if (AntiBot.isBot(entity)) continue;
 
-            double dist = RotationUtil.getEyeDistanceToEntity(living);
+            double dist = RotationUtils.getEyeDistanceToEntity(living);
             if (dist > aimRange.getValue()) continue;
 
             if (!isValidTarget(living)) continue;
-            if (!RotationUtil.isInFov(living, fov.getValue().floatValue())) continue;
+            if (!RotationUtils.isInFov(living, fov.getValue().floatValue())) continue;
             targets.sort(Comparator.comparingDouble(o -> (double) o.distanceTo(mc.player)));
             targets.add(living);
         }
-        targets.sort(Comparator.comparingDouble(RotationUtil::getEyeDistanceToEntity));
+        targets.sort(Comparator.comparingDouble(RotationUtils::getEyeDistanceToEntity));
     }
 
     private boolean isValidTarget(LivingEntity entity) {

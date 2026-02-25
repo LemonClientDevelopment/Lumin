@@ -1,7 +1,7 @@
 package com.github.lumin.utils.rotation;
 
 import com.github.lumin.managers.Managers;
-import com.github.lumin.utils.math.MathUtil;
+import com.github.lumin.utils.math.MathUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,21 +13,21 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector2f;
 import org.joml.Vector3d;
 
-public class RotationUtil {
+public class RotationUtils {
 
     private static final Minecraft mc = Minecraft.getInstance();
 
     public static Vector2f calculate(final Vector3d from, final Vector3d to) {
         final Vector3d diff = to.sub(from);
         final double distance = Math.hypot(diff.x, diff.z);
-        final float yaw = (float) (Mth.atan2(diff.z, diff.x) * MathUtil.TO_DEGREES) - 90.0F;
-        final float pitch = (float) (-(Mth.atan2(diff.y, distance) * MathUtil.TO_DEGREES));
+        final float yaw = (float) (Mth.atan2(diff.z, diff.x) * MathUtils.TO_DEGREES) - 90.0F;
+        final float pitch = (float) (-(Mth.atan2(diff.y, distance) * MathUtils.TO_DEGREES));
         return new Vector2f(yaw, pitch);
     }
 
     public static boolean isInFov(LivingEntity entity, float fov) {
         if (fov >= 360.0) return true;
-        float[] rotations = RotationUtil.getRotationsToEntity(entity);
+        float[] rotations = RotationUtils.getRotationsToEntity(entity);
         float yawDiff = Math.abs(Mth.wrapDegrees(rotations[0] - mc.player.getYRot()));
         return yawDiff <= fov / 2.0;
     }
@@ -61,7 +61,7 @@ public class RotationUtil {
 
     public static Vector2f calculate(final Entity entity, final boolean adaptive, final double range) {
         Vector2f normalRotations = calculate(entity);
-        if (!adaptive || RaytraceUtil.facingEnemy(mc.player, entity, normalRotations, range, 0)) {
+        if (!adaptive || RaytraceUtils.facingEnemy(mc.player, entity, normalRotations, range, 0)) {
             return normalRotations;
         }
 
@@ -73,7 +73,7 @@ public class RotationUtil {
                             (entity.getBoundingBox().maxY - entity.getBoundingBox().minY) * yPercent,
                             (entity.getBoundingBox().maxZ - entity.getBoundingBox().minZ) * zPercent));
 
-                    if (RaytraceUtil.facingEnemy(mc.player, entity, adaptiveRotations, range, 0)) {
+                    if (RaytraceUtils.facingEnemy(mc.player, entity, adaptiveRotations, range, 0)) {
                         return adaptiveRotations;
                     }
                 }
@@ -205,8 +205,8 @@ public class RotationUtil {
 
             for (int i = 0; i < iterations; i++) {
                 if (motion > 0.0001f) {
-                    yaw += (float) MathUtil.getRandom(-0.0006, 0.0006);
-                    pitch += (float) MathUtil.getRandom(-0.0035, 0.0035);
+                    yaw += (float) MathUtils.getRandom(-0.0006, 0.0006);
+                    pitch += (float) MathUtils.getRandom(-0.0035, 0.0035);
                 }
 
                 final Vector2f rotations = new Vector2f(yaw, pitch);

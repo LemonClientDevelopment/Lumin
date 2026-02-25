@@ -18,10 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ContentPanel implements IComponent {
+
     private final Minecraft mc = Minecraft.getInstance();
 
     private float x, y, width, height;
     private Category currentCategory;
+
     private final ModuleListView listView = new ModuleListView(mc);
     private final ModuleSettingsView settingsView = new ModuleSettingsView(mc);
 
@@ -123,4 +125,5 @@ public class ContentPanel implements IComponent {
         }
         return listView.charTyped(event);
     }
+
 }
