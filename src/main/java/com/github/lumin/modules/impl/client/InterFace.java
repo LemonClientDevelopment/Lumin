@@ -13,7 +13,7 @@ public class InterFace extends Module {
     public static InterFace INSTANCE = new InterFace();
 
     public InterFace() {
-        super("Interface", "界面", Category.CLIENT);
+        super("Interface", "界面", "idk", "idk", Category.CLIENT);
     }
 
     public final ModeSetting language = modeSetting("Language", "语言", "English", new String[]{"English", "Chinese"});

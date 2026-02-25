@@ -85,7 +85,7 @@ public class ModuleComponent implements IComponent {
         float nameScale = 0.85f * scale;
         float textHeight = set.font().getHeight(nameScale);
         float textY = y + (MODULE_HEIGHT * scale - textHeight) / 2f - scale;
-        set.font().addText(module.getDisplayName(), x + 4 * scale, textY, nameScale, Color.WHITE);
+        set.font().addText(module.getName(), x + 4 * scale, textY, nameScale, Color.WHITE);
 //        set.font().drawAndClear();
 
         float boxWidth = 25 * scale;

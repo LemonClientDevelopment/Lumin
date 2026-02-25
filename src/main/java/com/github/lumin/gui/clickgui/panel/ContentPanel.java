@@ -88,7 +88,7 @@ public class ContentPanel implements IComponent {
 
         if (currentCategory != null && !moduleCards.isEmpty()) {
             for (ModuleCard bar : moduleCards) {
-                if (!searchText.isEmpty() && !bar.module.getDisplayName().toLowerCase().startsWith(searchText.toLowerCase())) {
+                if (!searchText.isEmpty() && !bar.module.getName().toLowerCase().startsWith(searchText.toLowerCase())) {
                     continue;
                 }
 

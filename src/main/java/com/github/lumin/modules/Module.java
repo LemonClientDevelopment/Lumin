@@ -13,8 +13,11 @@ import java.util.List;
 
 public class Module {
 
-    private String englishName;
-    private String chineseName;
+    private final String englishName;
+    private final String chineseName;
+
+    private final String englishDescription;
+    private final String chineseDescription;
 
     public Category category;
 
@@ -32,9 +35,11 @@ public class Module {
 
     protected Minecraft mc;
 
-    public Module(String englishName, String chineseName, Category category) {
+    public Module(String englishName, String chineseName, String englishDescription, String chineseDescription, Category category) {
         this.englishName = englishName;
         this.chineseName = chineseName;
+        this.englishDescription = englishDescription;
+        this.chineseDescription = chineseDescription;
         this.category = category;
         //addSetting(this.hidden = new BoolSetting("Hidden", "隐藏", false));
         mc = Minecraft.getInstance();
@@ -114,7 +119,7 @@ public class Module {
         this.bindMode = bindMode;
     }
 
-    public String getDisplayName() {
+    public String getName() {
         return InterFace.isEnglish() ? englishName : chineseName;
     }
 
@@ -124,6 +129,18 @@ public class Module {
 
     public String getChineseName() {
         return chineseName;
+    }
+
+    public String getDescription() {
+        return InterFace.isEnglish() ? englishDescription : chineseDescription;
+    }
+
+    public String getEnglishDescription() {
+        return englishDescription;
+    }
+
+    public String getChineseDescription() {
+        return chineseDescription;
     }
 
     protected IntSetting intSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step, AbstractSetting.Dependency dependency) {

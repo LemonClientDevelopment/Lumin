@@ -11,7 +11,7 @@ public class ClickGui extends Module {
     public static ClickGui INSTANCE = new ClickGui();
 
     public ClickGui() {
-        super("ClickGui", "控制面板", Category.CLIENT);
+        super("ClickGui", "控制面板", "idk", "idk", Category.CLIENT);
         keyBind = GLFW_KEY_RIGHT_SHIFT;
     }
 

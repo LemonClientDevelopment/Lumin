@@ -19,7 +19,7 @@ public class RenderTest extends Module {
     public static RenderTest INSTANCE = new RenderTest();
 
     private RenderTest() {
-        super("RenderTest", "渲染测试", Category.VISUAL);
+        super("RenderTest", "渲染测试", "idk", "idk", Category.VISUAL);
         keyBind = GLFW.GLFW_KEY_U;
     }
 
