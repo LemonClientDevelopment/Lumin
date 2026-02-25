@@ -85,7 +85,7 @@ public class ModuleComponent implements IComponent {
         float nameScale = 0.85f * scale;
         float textHeight = set.font().getHeight(nameScale);
         float textY = y + (MODULE_HEIGHT * scale - textHeight) / 2f - scale;
-        set.font().addText(module.getDisplayName(), x + 4 * scale, textY, Color.WHITE, nameScale);
+        set.font().addText(module.getDisplayName(), x + 4 * scale, textY, nameScale, Color.WHITE);
 //        set.font().drawAndClear();
 
         float boxWidth = 25 * scale;
@@ -125,7 +125,7 @@ public class ModuleComponent implements IComponent {
         float bindTextHeight = set.font().getHeight(fontScale);
         float bindTextY = boxY + (boxHeight - bindTextHeight) / 2f - scale;
         if (!displayText.isEmpty()) {
-            set.font().addText(displayText, textX, bindTextY, Color.WHITE, fontScale);
+            set.font().addText(displayText, textX, bindTextY, fontScale, Color.WHITE);
         }
 //        set.font().drawAndClear();
 

@@ -37,7 +37,8 @@ public interface IComponent {
             RectRenderer middleRect,
             RoundRectRenderer topRoundRect,
             TextureRenderer texture,
-            TextRenderer font
+            TextRenderer font,
+            TextRenderer icons
     ) {
     }
 

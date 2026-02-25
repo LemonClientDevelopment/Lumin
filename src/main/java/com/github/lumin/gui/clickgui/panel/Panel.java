@@ -20,9 +20,10 @@ public class Panel implements IComponent {
     private final RectRenderer middleRect = new RectRenderer();
     private final RoundRectRenderer topRoundRect = new RoundRectRenderer();
     private final TextureRenderer textureRenderer = new TextureRenderer();
-    private final TextRenderer font = new TextRenderer();
+    private final TextRenderer fontRenderer = new TextRenderer();
+    private final TextRenderer iconsRenderer = new TextRenderer("fonts/icons.ttf");
 
-    private final RendererSet set = new RendererSet(bottomRoundRect, middleRect, topRoundRect, textureRenderer, font);
+    private final RendererSet set = new RendererSet(bottomRoundRect, middleRect, topRoundRect, textureRenderer, fontRenderer, iconsRenderer);
 
     private final Sidebar sidebar = new Sidebar();
     private final ContentPanel contentPanel = new ContentPanel();
@@ -34,7 +35,7 @@ public class Panel implements IComponent {
         float screenWidth = mc.getWindow().getGuiScaledWidth();
         float screenHeight = mc.getWindow().getGuiScaledHeight();
 
-        float width = screenWidth / 2f; // 占比为屏幕的 1/2
+        float width = screenWidth * 0.7f; // 占比为屏幕的 1/2
         float height = width * 9.0f / 16.0f; // 16:9
 
         float x = screenWidth / 2.0f - width / 2.0f;
@@ -60,7 +61,8 @@ public class Panel implements IComponent {
         middleRect.drawAndClear();
         topRoundRect.drawAndClear();
         textureRenderer.drawAndClear();
-        font.drawAndClear();
+        fontRenderer.drawAndClear();
+        iconsRenderer.drawAndClear();
 
     }
 

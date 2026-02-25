@@ -55,9 +55,9 @@ public class RenderTest extends Module {
         rectRenderer.addHorizontalGradient(baseX, baseY + 230, 200, 40, new Color(255, 0, 0, 180), new Color(0, 255, 0, 180));
         rectRenderer.addVerticalGradient(baseX + 220, baseY + 230, 200, 40, new Color(0, 0, 255, 180), new Color(255, 255, 0, 180));
 
-        textRenderer.addText("Lumin Render Test", baseX, baseY + 290, new Color(255, 255, 255), 1.5f);
-        textRenderer.addText("Rectangles, RoundRects, Lines, Circles, Gradients", baseX, baseY + 320, new Color(200, 200, 200), 1.0f);
-        textRenderer.addText("Animation: " + String.format("%.2f", anim), baseX, baseY + 345, new Color(150, 255, 150), 1.0f);
+        textRenderer.addText("Lumin Render Test", baseX, baseY + 290, 1.5f, new Color(255, 255, 255));
+        textRenderer.addText("Rectangles, RoundRects, Lines, Circles, Gradients", baseX, baseY + 320, 1.0f, new Color(200, 200, 200));
+        textRenderer.addText("Animation: " + String.format("%.2f", anim), baseX, baseY + 345, 1.0f, new Color(150, 255, 150));
 
         rectRenderer.drawAndClear();
         roundRectRenderer.drawAndClear();

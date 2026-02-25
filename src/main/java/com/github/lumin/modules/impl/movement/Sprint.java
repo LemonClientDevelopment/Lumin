@@ -10,7 +10,7 @@ public class Sprint extends Module {
     public static Sprint INSTANCE = new Sprint();
 
     public Sprint() {
-        super("Sprint", "疾跑", Category.MOVEMENT);
+        super("Sprint", "疾跑", Category.PLAYER);
 
         keyBind = GLFW.GLFW_KEY_G;
     }

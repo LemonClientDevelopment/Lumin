@@ -1,6 +1,5 @@
 package com.github.lumin.gui.clickgui.panel;
 
-import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.gui.IComponent;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.impl.client.InterFace;
@@ -19,8 +18,6 @@ public class Sidebar implements IComponent {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<CategoryBar> categoryBars = new ArrayList<>();
-
-    private final TextRenderer icons = new TextRenderer("fonts/icons.ttf");
 
     public Sidebar() {
         for (Category category : Category.values()) {
@@ -46,7 +43,7 @@ public class Sidebar implements IComponent {
         float width = this.width * guiScale;
         float height = this.height * guiScale;
 
-        Color color = new Color(25, 25, 25, 180);
+        Color color = new Color(25, 25, 25, 130);
         set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, color);
 
         var player = mc.player;
@@ -77,19 +74,20 @@ public class Sidebar implements IComponent {
         float accountY = nameY + 20 * guiScale;
 
         if (playerName != null) {
-            set.font().addText(player.getName().getString(), textX, nameY, Color.WHITE, guiScale * 1.5f);
-            set.font().addText("Account", textX, accountY, Color.GRAY, guiScale * 0.7f);
+            set.font().addText(player.getName().getString(), textX, nameY, guiScale * 1.5f, Color.WHITE);
+            set.font().addText("Account", textX, accountY, guiScale * 0.7f, Color.GRAY);
         }
 
         // Category Placeholder
         float categoryY = headY + headSize + padding;
-        float categoryHeight = height - (categoryY - y) - padding;
+
+        float itemHeight = 24 * guiScale;
+        float itemPadding = 4 * guiScale;
+        float categoryHeight = categoryBars.size() * (itemHeight + itemPadding) + itemPadding;
 
         if (categoryHeight > 0) {
             set.bottomRoundRect().addRoundRect(headX, categoryY, width - padding * 2, categoryHeight, radius, new Color(35, 35, 35, 180));
 
-            float itemHeight = 24 * guiScale;
-            float itemPadding = 4 * guiScale;
             float currentY = categoryY + itemPadding;
             float itemWidth = width - padding * 2 - itemPadding * 2;
             float itemX = headX + itemPadding;
@@ -103,11 +101,9 @@ public class Sidebar implements IComponent {
                 currentY += itemHeight + itemPadding;
             }
         }
-
-
     }
 
-    private class CategoryBar {
+    private static class CategoryBar {
 
         private final Category category;
         public float x, y, width, height;
@@ -124,20 +120,20 @@ public class Sidebar implements IComponent {
             }
 
             float iconScale = guiScale * 1.0f;
-            float iconWidth = icons.getWidth(category.icon, iconScale);
-            float iconHeight = icons.getHeight(iconScale);
+            float iconWidth = set.icons().getWidth(category.icon, iconScale);
+            float iconHeight = set.icons().getHeight(iconScale);
 
             float iconX = x + 8 * guiScale;
-            float iconY = y + (height - iconHeight) / 2f + 1 * guiScale;
+            float iconY = y + (height - iconHeight) / 2f - guiScale;
 
-            icons.addText(category.icon, iconX, iconY, hovered ? Color.WHITE : Color.GRAY, iconScale);
+            set.icons().addText(category.icon, iconX, iconY, iconScale, hovered ? Color.WHITE : Color.GRAY);
 
             float textX = iconX + iconWidth + 6 * guiScale;
-            float nameY = y + 5 * guiScale;
-            float accountY = nameY + 10 * guiScale;
+            float nameY = y + guiScale;
+            float descriptionY = nameY + 12 * guiScale;
 
-            set.font().addText(category.getName(), textX, nameY, Color.WHITE, guiScale * 0.9f);
-            set.font().addText("逼逼逼逼逼逼", textX, accountY, Color.GRAY, guiScale * 0.6f);
+            set.font().addText(category.getName(), textX, nameY, guiScale * 0.9f, Color.WHITE);
+            set.font().addText(category.description, textX, descriptionY, guiScale * 0.6f, Color.GRAY);
         }
 
     }

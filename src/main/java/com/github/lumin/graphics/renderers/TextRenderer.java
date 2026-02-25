@@ -26,12 +26,12 @@ public class TextRenderer implements IRenderer {
         textRenderer = new TtfTextRenderer();
     }
 
-    public void addText(String text, float x, float y, Color color, float scale) {
+    public void addText(String text, float x, float y, float scale, Color color) {
         textRenderer.addText(text, x, y, color, scale);
     }
 
     public void addText(String text, float x, float y, Color color) {
-        addText(text, x, y, color, 1.0f);
+        addText(text, x, y, 1.0f, color);
     }
 
     public float getHeight(float scale) {
