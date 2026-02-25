@@ -24,8 +24,13 @@ public class ContentPanel implements IComponent {
     @Override
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
 
+        float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
+        float radius = guiScale * 8f;
 
-        BlurShader.drawRoundedBlur(x, y, width, height, 0, 8.0f, 8.0f, 0, new Color(30, 30, 30, 245), InterFace.INSTANCE.blurStrength.getValue().floatValue(), 1.0f);
+        float width = this.width * guiScale;
+        float height = this.height * guiScale;
+
+        BlurShader.drawRoundedBlur(x, y, width, height, 0, radius, radius, 0, new Color(30, 30, 30, 245), InterFace.INSTANCE.blurStrength.getValue().floatValue(), 1.0f);
 
 
     }

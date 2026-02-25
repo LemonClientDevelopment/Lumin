@@ -1,7 +1,9 @@
 package com.github.lumin.gui.clickgui.panel;
 
 import com.github.lumin.gui.IComponent;
+import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.utils.render.MouseUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -21,8 +23,36 @@ public class Sidebar implements IComponent {
 
     @Override
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+
+        float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
+        float radius = guiScale * 8f;
+
+        float width = this.width * guiScale;
+        float height = this.height * guiScale;
+
         Color color = new Color(25, 25, 25, 220);
-        set.bottomRoundRect().addRoundRect(x, y, width, height, 8, 0, 0, 8, color);
+        set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, color);
+
+        if (Minecraft.getInstance().player != null) {
+            var player = Minecraft.getInstance().player;
+            var skin = player.getSkin().body();
+
+            float padding = 12 * guiScale;
+            float headSize = 32 * guiScale;
+            float headX = x + padding;
+            float headY = y + padding;
+
+            // Face
+            set.bottomRoundRect().addRoundRect(headX, headY, headSize, headSize, radius, Color.WHITE);
+            set.texture().addTexture(skin.texturePath(), headX, headY, headSize, headSize, 0.125f, 0.125f, 0.25f, 0.25f, Color.WHITE);
+
+            float textX = headX + headSize + 6 * guiScale;
+            float nameY = headY * guiScale;
+            float accountY = nameY + 20 * guiScale;
+
+            set.font().addText(player.getName().getString(), textX, nameY, Color.WHITE, guiScale * 1.5f);
+            set.font().addText("Account", textX, accountY, Color.GRAY, guiScale * 0.7f);
+        }
     }
 
     @Override

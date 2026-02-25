@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.util.*;
 
 public class TextureRenderer implements IRenderer {
+    private final Minecraft mc = Minecraft.getInstance();
+
     private static final int STRIDE = 24;
     private final long bufferSize;
     private final Map<Identifier, Batch> batches = new LinkedHashMap<>();
@@ -87,7 +89,7 @@ public class TextureRenderer implements IRenderer {
 
         LuminRenderSystem.applyOrthoProjection();
 
-        var target = Minecraft.getInstance().getMainRenderTarget();
+        var target = mc.getMainRenderTarget();
         if (target.getColorTextureView() == null) return;
 
         GpuBufferSlice dynamicUniforms = RenderSystem.getDynamicUniforms().writeTransform(
@@ -133,7 +135,7 @@ public class TextureRenderer implements IRenderer {
     }
 
     private LuminTexture loadTexture(Identifier identifier) {
-        Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(identifier);
+        Optional<Resource> resource = mc.getResourceManager().getResource(identifier);
         if (resource.isEmpty()) {
             throw new RuntimeException("Couldn't find resource at " + identifier);
         }
@@ -153,8 +155,8 @@ public class TextureRenderer implements IRenderer {
             var sampler = RenderSystem.getDevice().createSampler(
                     AddressMode.CLAMP_TO_EDGE,
                     AddressMode.CLAMP_TO_EDGE,
-                    FilterMode.LINEAR,
-                    FilterMode.LINEAR,
+                    FilterMode.NEAREST,
+                    FilterMode.NEAREST,
                     1,
                     OptionalDouble.empty()
             );

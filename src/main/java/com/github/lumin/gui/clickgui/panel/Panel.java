@@ -3,6 +3,7 @@ package com.github.lumin.gui.clickgui.panel;
 import com.github.lumin.graphics.renderers.RectRenderer;
 import com.github.lumin.graphics.renderers.RoundRectRenderer;
 import com.github.lumin.graphics.renderers.TextRenderer;
+import com.github.lumin.graphics.renderers.TextureRenderer;
 import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.gui.IComponent;
 import com.github.lumin.modules.impl.client.InterFace;
@@ -18,14 +19,18 @@ public class Panel implements IComponent {
     private final RoundRectRenderer bottomRoundRect = new RoundRectRenderer();
     private final RectRenderer middleRect = new RectRenderer();
     private final RoundRectRenderer topRoundRect = new RoundRectRenderer();
+    private final TextureRenderer textureRenderer = new TextureRenderer();
     private final TextRenderer font = new TextRenderer();
 
-    private final RendererSet set = new RendererSet(bottomRoundRect, middleRect, topRoundRect, font);
+    private final RendererSet set = new RendererSet(bottomRoundRect, middleRect, topRoundRect, textureRenderer, font);
 
     private final Sidebar sidebar = new Sidebar();
     private final ContentPanel contentPanel = new ContentPanel();
 
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+        float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
+        float radius = guiScale * 8f;
+
         float screenWidth = mc.getWindow().getGuiScaledWidth();
         float screenHeight = mc.getWindow().getGuiScaledHeight();
 
@@ -35,8 +40,11 @@ public class Panel implements IComponent {
         float x = screenWidth / 2.0f - width / 2.0f;
         float y = screenHeight / 2.0f - height / 2.0f;
 
+        width *= guiScale;
+        height *= guiScale;
+
         if (InterFace.INSTANCE.backgroundBlur.getValue()) {
-            BlurShader.drawRoundedBlur(x, y, width, height, 8f, InterFace.INSTANCE.blurStrength.getValue().floatValue());
+            BlurShader.drawRoundedBlur(x, y, width, height, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue());
         }
 
         float sidebarWidth = width / 4; // 比例为1:4
@@ -51,6 +59,7 @@ public class Panel implements IComponent {
         bottomRoundRect.drawAndClear();
         middleRect.drawAndClear();
         topRoundRect.drawAndClear();
+        textureRenderer.drawAndClear();
         font.drawAndClear();
     }
 

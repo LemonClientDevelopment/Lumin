@@ -3,6 +3,7 @@ package com.github.lumin.gui;
 import com.github.lumin.graphics.renderers.RectRenderer;
 import com.github.lumin.graphics.renderers.RoundRectRenderer;
 import com.github.lumin.graphics.renderers.TextRenderer;
+import com.github.lumin.graphics.renderers.TextureRenderer;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -35,6 +36,7 @@ public interface IComponent {
             RoundRectRenderer bottomRoundRect,
             RectRenderer middleRect,
             RoundRectRenderer topRoundRect,
+            TextureRenderer texture,
             TextRenderer font
     ) {
     }
