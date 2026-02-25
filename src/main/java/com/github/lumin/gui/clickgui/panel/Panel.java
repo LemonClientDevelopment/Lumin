@@ -28,7 +28,13 @@ public class Panel implements IComponent {
     private final Sidebar sidebar = new Sidebar();
     private final ContentPanel contentPanel = new ContentPanel();
 
+    public Panel() {
+        sidebar.setOnSelect(contentPanel::setCurrentCategory);
+        contentPanel.setCurrentCategory(sidebar.getSelectedCategory());
+    }
+
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float radius = guiScale * 8f;
 

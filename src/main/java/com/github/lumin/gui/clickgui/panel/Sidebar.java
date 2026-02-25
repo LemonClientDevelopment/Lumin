@@ -8,21 +8,34 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.ClientAsset;
+import net.minecraft.sounds.SoundEvents;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class Sidebar implements IComponent {
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<CategoryBar> categoryBars = new ArrayList<>();
+    private Category selectedCategory = Category.values()[0];
+    private Consumer<Category> onSelect;
 
     public Sidebar() {
         for (Category category : Category.values()) {
             categoryBars.add(new CategoryBar(category));
         }
+    }
+
+    public void setOnSelect(Consumer<Category> onSelect) {
+        this.onSelect = onSelect;
+    }
+
+    public Category getSelectedCategory() {
+        return selectedCategory;
     }
 
     private float x, y, width, height;
@@ -102,20 +115,22 @@ public class Sidebar implements IComponent {
         }
     }
 
-    private static class CategoryBar {
+    private class CategoryBar {
 
         private final Category category;
-        public float x, y, width, height;
+        private float x, y, width, height;
 
-        public CategoryBar(Category category) {
+        private CategoryBar(Category category) {
             this.category = category;
         }
 
-        public void render(RendererSet set, int mouseX, int mouseY, float guiScale) {
-            boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
+        private void render(RendererSet set, int mouseX, int mouseY, float guiScale) {
 
-            if (hovered) {
-                set.bottomRoundRect().addRoundRect(x, y, width, height, 8 * guiScale, new Color(255, 255, 255, 30));
+            boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
+            boolean isSelected = category == selectedCategory;
+
+            if (hovered || isSelected) {
+                set.bottomRoundRect().addRoundRect(x, y, width, height, 8 * guiScale, isSelected ? new Color(255, 255, 255, 60) : new Color(255, 255, 255, 30));
             }
 
             float iconScale = guiScale * 1.0f;
@@ -125,7 +140,7 @@ public class Sidebar implements IComponent {
             float iconX = x + 8 * guiScale;
             float iconY = y + (height - iconHeight) / 2f - guiScale;
 
-            set.icons().addText(category.icon, iconX, iconY, iconScale, hovered ? Color.WHITE : Color.GRAY);
+            set.icons().addText(category.icon, iconX, iconY, iconScale, isSelected || hovered ? Color.WHITE : Color.GRAY);
 
             float textX = iconX + iconWidth + 6 * guiScale;
             float nameY = y + guiScale;
@@ -139,7 +154,21 @@ public class Sidebar implements IComponent {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean focused) {
-        return MouseUtils.isHovering(x, y, width, height, event.x(), event.y());
+        if (!MouseUtils.isHovering(x, y, width, height, event.x(), event.y())) return false;
+
+        for (CategoryBar bar : categoryBars) {
+            if (MouseUtils.isHovering(bar.x, bar.y, bar.width, bar.height, event.x(), event.y())) {
+                if (selectedCategory != bar.category) {
+                    selectedCategory = bar.category;
+                    if (onSelect != null) {
+                        onSelect.accept(selectedCategory);
+                    }
+                    mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                }
+                return true;
+            }
+        }
+        return true;
     }
 
     @Override

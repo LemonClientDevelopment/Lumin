@@ -11,4 +11,4 @@ This project is distributed under a multi-license model:
 are licensed under the [MIT License](src/main/java/com/github/lumin/graphics/LICENSE).
 
 ---
-Copyright © 2026 slmpc.
+Copyright © 2026 KonekokoHouse.
