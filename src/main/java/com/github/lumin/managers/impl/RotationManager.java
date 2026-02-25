@@ -4,10 +4,10 @@ import com.github.lumin.events.JumpRotationEvent;
 import com.github.lumin.events.MotionEvent;
 import com.github.lumin.events.RayTraceEvent;
 import com.github.lumin.events.StrafeEvent;
-import com.github.lumin.utils.player.MoveUtil;
+import com.github.lumin.utils.player.MoveUtils;
 import com.github.lumin.utils.rotation.MovementFix;
 import com.github.lumin.utils.rotation.Priority;
-import com.github.lumin.utils.rotation.RotationUtil;
+import com.github.lumin.utils.rotation.RotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -122,7 +122,7 @@ public class RotationManager {
                 }
             }
 
-            rotations = RotationUtil.smooth(new Vector2f(targetYaw, targetPitch), rotationSpeed + Math.random());
+            rotations = RotationUtils.smooth(new Vector2f(targetYaw, targetPitch), rotationSpeed + Math.random());
 
             if (Float.isNaN(rotations.x) || Float.isInfinite(rotations.x)) {
                 rotations.x = mc.player.getYRot();
@@ -204,7 +204,7 @@ public class RotationManager {
         }
 
         if (correctMovement == MovementFix.BACKWARDS_SPRINT && active) {
-            if (Math.abs(rotations.x % 360 - Math.toDegrees(MoveUtil.getDirection()) % 360) > 45) {
+            if (Math.abs(rotations.x % 360 - Math.toDegrees(MoveUtils.getDirection()) % 360) > 45) {
                 mc.options.keySprint.setDown(false);
                 mc.player.setSprinting(false);
             }
@@ -214,7 +214,7 @@ public class RotationManager {
     @SubscribeEvent
     private void onMoveInput(MovementInputUpdateEvent event) {
         if (active && correctMovement == MovementFix.NORMAL && rotations != null) {
-            MoveUtil.fixMovement(event, rotations.x);
+            MoveUtils.fixMovement(event, rotations.x);
         }
     }
 
@@ -241,7 +241,7 @@ public class RotationManager {
     }
 
     @SubscribeEvent
-    private void onMotion(MotionEvent.Pre event) {
+    private void onMotion(MotionEvent event) {
         if (active && rotations != null) {
             float yaw = rotations.x;
             float pitch = rotations.y;
@@ -294,7 +294,7 @@ public class RotationManager {
     private void correctDisabledRotations() {
         if (lastRotations == null) return;
         final Vector2f rotations = new Vector2f(mc.player.getYRot(), mc.player.getXRot());
-        final Vector2f fixedRotations = RotationUtil.resetRotation(RotationUtil.applySensitivityPatch(rotations, lastRotations));
+        final Vector2f fixedRotations = RotationUtils.resetRotation(RotationUtils.applySensitivityPatch(rotations, lastRotations));
 
         if (!Float.isNaN(fixedRotations.x) && !Float.isNaN(fixedRotations.y)) {
             mc.player.setYRot(fixedRotations.x);
