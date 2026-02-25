@@ -71,11 +71,21 @@ addRect(10f,10f,100f,100f,Color.WHITE);
 
 ```java
 // 1. 向缓冲区添加形状
-rectRenderer.get().addRect(10f, 10f, 200f, 200f, Color.WHITE);
+rectRenderer.get().
+
+addRect(10f,10f,200f,200f,Color.WHITE);
 
 // 2. 绘制到屏幕并在下一帧前清理数据
-rectRenderer.get().draw();
-rectRenderer.get().clear(); 
+rectRenderer.
+
+get().
+
+draw();
+rectRenderer.
+
+get().
+
+clear();
 
 // 你也可以直接使用 drawAndClear() 简写
 

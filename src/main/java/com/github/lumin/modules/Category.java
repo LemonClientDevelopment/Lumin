@@ -6,15 +6,17 @@ import java.util.Locale;
 
 public enum Category {
 
-    COMBAT("战斗"),
-    MOVEMENT("移动"),
-    PLAYER("玩家"),
-    VISUAL("渲染"),
-    CLIENT("客户端");
+    COMBAT("\uF01D", "战斗"),
+    MOVEMENT("\uF008", "移动"),
+    PLAYER("\uF002", "玩家"),
+    VISUAL("\uF019", "渲染"),
+    CLIENT("\uF003", "客户端");
 
+    public final String icon;
     public final String cnName;
 
-    Category(String cnName) {
+    Category(String icon, String cnName) {
+        this.icon = icon;
         this.cnName = cnName;
     }
 

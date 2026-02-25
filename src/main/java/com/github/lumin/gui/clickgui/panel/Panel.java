@@ -61,6 +61,7 @@ public class Panel implements IComponent {
         topRoundRect.drawAndClear();
         textureRenderer.drawAndClear();
         font.drawAndClear();
+
     }
 
     @Override

@@ -10,6 +10,14 @@ public class TextRenderer implements IRenderer {
 
     private final ITextRenderer textRenderer;
 
+    public TextRenderer(String fontPath, long bufferSize) {
+        textRenderer = new TtfTextRenderer(fontPath, bufferSize);
+    }
+
+    public TextRenderer(String fontPath) {
+        textRenderer = new TtfTextRenderer(fontPath, 2 * 1024 * 1024);
+    }
+
     public TextRenderer(long bufferSize) {
         textRenderer = new TtfTextRenderer(bufferSize);
     }

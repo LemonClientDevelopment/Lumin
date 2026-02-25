@@ -35,15 +35,19 @@ public class TtfTextRenderer implements ITextRenderer {
     private static final int STRIDE = 24;
     private final long bufferSize;
 
-    private static final TtfFontLoader fontLoader =
-            new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/pingfang.ttf"));
+    private final TtfFontLoader fontLoader;
 
     private final Map<TtfGlyphAtlas, Batch> batches = new LinkedHashMap<>();
 
     private GpuBuffer ttfInfoUniformBuf = null;
 
-    public TtfTextRenderer(long bufferSize) {
+    public TtfTextRenderer(String fontPath, long bufferSize) {
         this.bufferSize = bufferSize;
+        this.fontLoader = new TtfFontLoader(ResourceLocationUtils.getIdentifier(fontPath));
+    }
+
+    public TtfTextRenderer(long bufferSize) {
+        this("fonts/pingfang.ttf", bufferSize);
     }
 
     public TtfTextRenderer() {

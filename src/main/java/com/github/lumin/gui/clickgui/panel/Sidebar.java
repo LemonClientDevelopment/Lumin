@@ -1,18 +1,32 @@
 package com.github.lumin.gui.clickgui.panel;
 
+import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.gui.IComponent;
+import com.github.lumin.modules.Category;
 import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.utils.render.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.ClientAsset;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Sidebar implements IComponent {
 
     private final Minecraft mc = Minecraft.getInstance();
+    private final List<CategoryBar> categoryBars = new ArrayList<>();
+
+    private final TextRenderer icons = new TextRenderer("fonts/icons.ttf");
+
+    public Sidebar() {
+        for (Category category : Category.values()) {
+            categoryBars.add(new CategoryBar(category));
+        }
+    }
 
     private float x, y, width, height;
 
@@ -32,33 +46,100 @@ public class Sidebar implements IComponent {
         float width = this.width * guiScale;
         float height = this.height * guiScale;
 
-        Color color = new Color(25, 25, 25, 220);
+        Color color = new Color(25, 25, 25, 180);
         set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, color);
 
-        if (mc.player != null) {
-            var skin = mc.player.getSkin().body();
+        var player = mc.player;
+        String playerName = null;
+        ClientAsset.Texture skin = null;
+        if (player != null) {
+            playerName = player.getName().getString();
+            skin = player.getSkin().body();
+        }
 
-            float padding = 12 * guiScale;
-            float headSize = 32 * guiScale;
-            float headX = x + padding;
-            float headY = y + padding;
+        float padding = 12 * guiScale;
+        float headSize = 32 * guiScale;
+        float headX = x + padding;
+        float headY = y + padding;
 
-            // Outline
-            float outline = 0.5f * guiScale;
-            set.bottomRoundRect().addRoundRect(headX - outline, headY - outline, headSize + outline * 2, headSize + outline * 2, radius + outline, Color.WHITE);
+        // Outline
+        float outline = 0.5f * guiScale;
+        set.bottomRoundRect().addRoundRect(headX - outline, headY - outline, headSize + outline * 2, headSize + outline * 2, radius + outline, Color.WHITE);
 
-            // Face
+        // Face
+        if (skin != null) {
             set.bottomRoundRect().addRoundRect(headX, headY, headSize, headSize, radius, Color.WHITE);
             set.texture().addRoundedTexture(skin.texturePath(), headX, headY, headSize, headSize, radius, 0.125f, 0.125f, 0.25f, 0.25f, Color.WHITE);
-
-            float textX = headX + headSize + 6 * guiScale;
-            float nameY = headY * guiScale;
-            float accountY = nameY + 20 * guiScale;
-
-            set.font().addText(mc.player.getName().getString(), textX, nameY, Color.WHITE, guiScale * 1.5f);
-            set.font().addText("Account", textX, accountY, Color.GRAY, guiScale * 0.7f);
-
         }
+
+        float textX = headX + headSize + 6 * guiScale;
+        float nameY = headY * guiScale;
+        float accountY = nameY + 20 * guiScale;
+
+        if (playerName != null) {
+            set.font().addText(player.getName().getString(), textX, nameY, Color.WHITE, guiScale * 1.5f);
+            set.font().addText("Account", textX, accountY, Color.GRAY, guiScale * 0.7f);
+        }
+
+        // Category Placeholder
+        float categoryY = headY + headSize + padding;
+        float categoryHeight = height - (categoryY - y) - padding;
+
+        if (categoryHeight > 0) {
+            set.bottomRoundRect().addRoundRect(headX, categoryY, width - padding * 2, categoryHeight, radius, new Color(35, 35, 35, 180));
+
+            float itemHeight = 24 * guiScale;
+            float itemPadding = 4 * guiScale;
+            float currentY = categoryY + itemPadding;
+            float itemWidth = width - padding * 2 - itemPadding * 2;
+            float itemX = headX + itemPadding;
+
+            for (CategoryBar bar : categoryBars) {
+                bar.x = itemX;
+                bar.y = currentY;
+                bar.width = itemWidth;
+                bar.height = itemHeight;
+                bar.render(set, mouseX, mouseY, guiScale);
+                currentY += itemHeight + itemPadding;
+            }
+        }
+
+
+    }
+
+    private class CategoryBar {
+
+        private final Category category;
+        public float x, y, width, height;
+
+        public CategoryBar(Category category) {
+            this.category = category;
+        }
+
+        public void render(RendererSet set, int mouseX, int mouseY, float guiScale) {
+            boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
+
+            if (hovered) {
+                set.bottomRoundRect().addRoundRect(x, y, width, height, 8 * guiScale, new Color(255, 255, 255, 30));
+            }
+
+            float iconScale = guiScale * 1.0f;
+            float iconWidth = icons.getWidth(category.icon, iconScale);
+            float iconHeight = icons.getHeight(iconScale);
+
+            float iconX = x + 8 * guiScale;
+            float iconY = y + (height - iconHeight) / 2f + 1 * guiScale;
+
+            icons.addText(category.icon, iconX, iconY, hovered ? Color.WHITE : Color.GRAY, iconScale);
+
+            float textX = iconX + iconWidth + 6 * guiScale;
+            float nameY = y + 5 * guiScale;
+            float accountY = nameY + 10 * guiScale;
+
+            set.font().addText(category.getName(), textX, nameY, Color.WHITE, guiScale * 0.9f);
+            set.font().addText("逼逼逼逼逼逼", textX, accountY, Color.GRAY, guiScale * 0.6f);
+        }
+
     }
 
     @Override
