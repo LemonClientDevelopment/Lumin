@@ -23,7 +23,7 @@ public class Module {
 
     public int keyBind;
 
-    public enum BindMode { Toggle, Hold }
+    public enum BindMode {Toggle, Hold}
 
     private BindMode bindMode = BindMode.Toggle;
 
