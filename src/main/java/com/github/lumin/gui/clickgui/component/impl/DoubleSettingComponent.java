@@ -49,11 +49,14 @@ public class DoubleSettingComponent extends Component {
         set.font().addText(name, getX() + padding, textY, textScale, Color.WHITE);
 
         String valueStr;
+        String valueMeasureStr;
         if (editing) {
             if (setting.isPercentageMode()) {
-                valueStr = editText + "%";
+                valueMeasureStr = editText + "%";
+                valueStr = valueMeasureStr;
                 if (System.currentTimeMillis() % 1000 > 500) valueStr += "_";
             } else {
+                valueMeasureStr = editText;
                 valueStr = editText;
                 if (System.currentTimeMillis() % 1000 > 500) valueStr += "_";
             }
@@ -67,8 +70,10 @@ public class DoubleSettingComponent extends Component {
                 percent = Math.max(0, Math.min(100, percent));
             }
             valueStr = percent + "%";
+            valueMeasureStr = valueStr;
         } else {
             valueStr = String.format("%.1f", setting.getValue());
+            valueMeasureStr = valueStr;
         }
 
         float valueInnerPad = 4.0f * scale;
@@ -77,7 +82,7 @@ public class DoubleSettingComponent extends Component {
         float valueMinW = set.font().getWidth(minStr, textScale);
         float valueMaxW = set.font().getWidth(maxStr, textScale);
         float valuePercentW = set.font().getWidth("100%", textScale);
-        float valueBoxW = Math.max(valueMinW, Math.max(valueMaxW, valuePercentW)) + valueInnerPad * 2.0f;
+        float valueBoxW = Math.max(valueMinW, Math.max(valueMaxW, valuePercentW)) + valueInnerPad * 2.0f + 8.0f * scale;
         float valueBoxH = Math.max(0.0f, getHeight() - 4.0f * scale);
         float valueBoxX = getX() + getWidth() - padding - valueBoxW;
         float valueBoxY = getY() + (getHeight() - valueBoxH) / 2.0f;
@@ -89,12 +94,12 @@ public class DoubleSettingComponent extends Component {
         Color valueBg = editing ? new Color(255, 255, 255, 22) : new Color(255, 255, 255, 12);
         set.bottomRoundRect().addRoundRect(valueBoxX, valueBoxY, valueBoxW, valueBoxH, 6.0f * scale, valueBg);
 
-        float valueW = Math.min(set.font().getWidth(valueStr, textScale), Math.max(0.0f, valueBoxW - valueInnerPad * 2.0f));
+        float valueW = Math.min(set.font().getWidth(valueMeasureStr, textScale), Math.max(0.0f, valueBoxW - valueInnerPad * 2.0f));
         float valueX = valueBoxX + (valueBoxW - valueW) / 2.0f;
         float valueTextY = valueBoxY + (valueBoxH - set.font().getHeight(textScale)) / 2.0f - 0.5f * scale;
         set.font().addText(valueStr, valueX, valueTextY, textScale, new Color(200, 200, 200));
 
-        float sliderWidth = 60.0f * scale;
+        float sliderWidth = 68.0f * scale;
         float sliderHeight = 3.0f * scale;
         float sliderX = valueBoxX - padding - sliderWidth;
         float sliderY = getY() + (getHeight() - sliderHeight) / 2.0f;
@@ -139,12 +144,14 @@ public class DoubleSettingComponent extends Component {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean focused) {
-        if (event.button() == 0) {
-            if (editing && !MouseUtils.isHovering(lastValueBoxX, lastValueBoxY, lastValueBoxW, lastValueBoxH, event.x(), event.y())) {
-                applyEditText();
-                editing = false;
-            }
+        if (editing && !MouseUtils.isHovering(lastValueBoxX, lastValueBoxY, lastValueBoxW, lastValueBoxH, event.x(), event.y())) {
+            applyEditText();
+            editing = false;
+            dragging = false;
+            return true;
+        }
 
+        if (event.button() == 0) {
             if (MouseUtils.isHovering(lastSliderX, lastSliderHitY, lastSliderW, lastSliderHitH, event.x(), event.y())) {
                 if (editing) return true;
                 dragging = true;
