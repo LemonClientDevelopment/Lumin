@@ -9,17 +9,24 @@ public class IntSetting extends AbstractSetting<Integer> {
     private final int max;
     private final int step;
 
-    public IntSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step, Dependency dependency) {
+    private final boolean percentageMode;
+
+    public IntSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step) {
+        this(englishName, chineseName, defaultValue, min, max, step, () -> true, false);
+    }
+
+    public IntSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step, boolean percentageMode) {
+        this(englishName, chineseName, defaultValue, min, max, step, () -> true, percentageMode);
+    }
+
+    public IntSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step, Dependency dependency, boolean percentageMode) {
         super(englishName, chineseName, dependency);
         this.value = defaultValue;
         this.defaultValue = defaultValue;
         this.min = min;
         this.max = max;
         this.step = step;
-    }
-
-    public IntSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step) {
-        this(englishName, chineseName, defaultValue, min, max, step, () -> true);
+        this.percentageMode = percentageMode;
     }
 
     @Override
@@ -37,6 +44,10 @@ public class IntSetting extends AbstractSetting<Integer> {
 
     public int getStep() {
         return step;
+    }
+
+    public boolean isPercentageMode() {
+        return percentageMode;
     }
 
 }

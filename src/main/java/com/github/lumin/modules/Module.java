@@ -144,7 +144,11 @@ public class Module {
     }
 
     protected IntSetting intSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step, AbstractSetting.Dependency dependency) {
-        return addSetting(new IntSetting(englishName, chineseName, defaultValue, min, max, step, dependency));
+        return addSetting(new IntSetting(englishName, chineseName, defaultValue, min, max, step, dependency, false));
+    }
+
+    protected IntSetting intSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step, AbstractSetting.Dependency dependency, boolean percentageMode) {
+        return addSetting(new IntSetting(englishName, chineseName, defaultValue, min, max, step, dependency, percentageMode));
     }
 
     protected IntSetting intSetting(String englishName, String chineseName, int defaultValue, int min, int max, int step) {
@@ -160,7 +164,11 @@ public class Module {
     }
 
     protected DoubleSetting doubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step, AbstractSetting.Dependency dependency) {
-        return addSetting(new DoubleSetting(englishName, chineseName, defaultValue, min, max, step, dependency));
+        return addSetting(new DoubleSetting(englishName, chineseName, defaultValue, min, max, step, dependency, false));
+    }
+
+    protected DoubleSetting doubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step, AbstractSetting.Dependency dependency, boolean percentageMode) {
+        return addSetting(new DoubleSetting(englishName, chineseName, defaultValue, min, max, step, dependency, percentageMode));
     }
 
     protected DoubleSetting doubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step) {

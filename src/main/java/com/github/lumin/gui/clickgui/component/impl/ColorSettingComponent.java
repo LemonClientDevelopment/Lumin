@@ -1,5 +1,8 @@
 package com.github.lumin.gui.clickgui.component.impl;
 
+import com.github.lumin.graphics.renderers.RectRenderer;
+import com.github.lumin.graphics.renderers.RoundRectRenderer;
+import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.gui.Component;
 import com.github.lumin.settings.impl.ColorSetting;
 import com.github.lumin.utils.render.MouseUtils;
@@ -37,11 +40,25 @@ public class ColorSettingComponent extends Component {
         float sw = 10.0f * scale;
         float sx = getX() + getWidth() - 6.0f * scale - sw;
         float sy = getY() + (getHeight() - sw) / 2.0f;
-        if (value != null) {
-            set.bottomRoundRect().addRoundRect(sx, sy, sw, sw, 3.0f * scale, value);
-        }
+
+        set.bottomRoundRect().addRoundRect(sx, sy, sw, sw, 3.0f * scale, value);
+
 
         float hexW = set.font().getWidth(hex, textScale);
         set.font().addText(hex, sx - 6.0f * scale - hexW, textY, textScale, new Color(200, 200, 200));
+    }
+
+    private static class PickingPanel {
+
+        private final RoundRectRenderer roundRectRenderer = new RoundRectRenderer();
+        private final RectRenderer rectRenderer = new RectRenderer();
+        private final TextRenderer textRenderer = new TextRenderer();
+
+        private final ColorSetting setting;
+
+        private PickingPanel(ColorSetting setting) {
+            this.setting = setting;
+        }
+
     }
 }

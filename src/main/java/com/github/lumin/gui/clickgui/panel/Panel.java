@@ -50,6 +50,9 @@ public class Panel implements IComponent {
         width *= guiScale;
         height *= guiScale;
 
+        x *= guiScale;
+        y *= guiScale;
+
         if (InterFace.INSTANCE.backgroundBlur.getValue()) {
             BlurShader.drawRoundedBlur(x, y, width, height, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue());
         }

@@ -9,17 +9,24 @@ public class DoubleSetting extends AbstractSetting<Double> {
     private final double max;
     private final double step;
 
-    public DoubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step, Dependency dependency) {
+    private final boolean percentageMode;
+
+    public DoubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step) {
+        this(englishName, chineseName, defaultValue, min, max, step, () -> true, false);
+    }
+
+    public DoubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step, boolean percentageMode) {
+        this(englishName, chineseName, defaultValue, min, max, step, () -> true, percentageMode);
+    }
+
+    public DoubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step, Dependency dependency, boolean percentageMode) {
         super(englishName, chineseName, dependency);
         this.value = defaultValue;
         this.defaultValue = defaultValue;
         this.min = min;
         this.max = max;
         this.step = step;
-    }
-
-    public DoubleSetting(String englishName, String chineseName, double defaultValue, double min, double max, double step) {
-        this(englishName, chineseName, defaultValue, min, max, step, () -> true);
+        this.percentageMode = percentageMode;
     }
 
     @Override
@@ -37,6 +44,10 @@ public class DoubleSetting extends AbstractSetting<Double> {
 
     public double getStep() {
         return step;
+    }
+
+    public boolean isPercentageMode() {
+        return percentageMode;
     }
 
 }

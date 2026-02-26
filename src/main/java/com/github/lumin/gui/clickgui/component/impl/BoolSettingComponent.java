@@ -27,14 +27,29 @@ public class BoolSettingComponent extends Component {
         set.bottomRoundRect().addRoundRect(getX(), getY(), getWidth(), getHeight(), 6.0f * scale, bg);
 
         String name = setting.getDisplayName();
-        String value = setting.getValue() ? "ON" : "OFF";
 
         float textScale = 0.85f * scale;
         float textY = getY() + (getHeight() - set.font().getHeight(textScale)) / 2.0f - 0.5f * scale;
         set.font().addText(name, getX() + 6.0f * scale, textY, textScale, Color.WHITE);
 
-        float valueW = set.font().getWidth(value, textScale);
-        set.font().addText(value, getX() + getWidth() - 6.0f * scale - valueW, textY, textScale, setting.getValue() ? new Color(120, 255, 160) : new Color(200, 200, 200));
+        float switchW = 22.0f * scale;
+        float switchH = 10.0f * scale;
+        float switchX = getX() + getWidth() - 6.0f * scale - switchW;
+        float switchY = getY() + (getHeight() - switchH) / 2.0f;
+
+        Color trackColor = setting.getValue() ? new Color(55, 180, 90) : new Color(60, 60, 60);
+        set.bottomRoundRect().addRoundRect(switchX, switchY, switchW, switchH, switchH / 2.0f, trackColor);
+
+        float thumbSize = switchH - 2.0f * scale;
+        float thumbX;
+        if (setting.getValue()) {
+            thumbX = switchX + switchW - thumbSize - 1.0f * scale;
+        } else {
+            thumbX = switchX + 1.0f * scale;
+        }
+        float thumbY = switchY + 1.0f * scale;
+
+        set.bottomRoundRect().addRoundRect(thumbX, thumbY, thumbSize, thumbSize, thumbSize / 2.0f, Color.WHITE);
     }
 
     @Override
