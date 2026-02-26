@@ -3,9 +3,12 @@ package com.github.lumin.gui.clickgui.component.impl;
 import com.github.lumin.gui.Component;
 import com.github.lumin.settings.impl.StringSetting;
 import com.github.lumin.utils.render.MouseUtils;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -13,9 +16,11 @@ import java.awt.*;
 public class StringSettingComponent extends Component {
     private final StringSetting setting;
     private boolean focused;
+    private final Animation focusAnimation = new Animation(Easing.EASE_OUT_QUAD, 140L);
 
     public StringSettingComponent(StringSetting setting) {
         this.setting = setting;
+        focusAnimation.setStartValue(0.0f);
     }
 
     public StringSetting getSetting() {
@@ -27,7 +32,11 @@ public class StringSettingComponent extends Component {
         if (!setting.isAvailable()) return;
 
         boolean hovered = ColorSettingComponent.isMouseOutOfPicker(mouseX, mouseY) && MouseUtils.isHovering(getX(), getY(), getWidth(), getHeight(), mouseX, mouseY);
-        Color bg = focused ? new Color(255, 255, 255, 22) : (hovered ? new Color(255, 255, 255, 18) : new Color(255, 255, 255, 10));
+        float target = focused ? 1.0f : (hovered ? 0.6f : 0.0f);
+        focusAnimation.run(target);
+        float t = Mth.clamp(focusAnimation.getValue(), 0.0f, 1.0f);
+        int alpha = (int) Mth.lerp(t, 10.0f, 22.0f);
+        Color bg = new Color(255, 255, 255, Mth.clamp(alpha, 0, 255));
         set.bottomRoundRect().addRoundRect(getX(), getY(), getWidth(), getHeight(), 6.0f * scale, bg);
 
         String name = setting.getDisplayName();

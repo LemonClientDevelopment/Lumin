@@ -24,7 +24,7 @@ import java.util.List;
 
 public class AimAssist extends Module {
     public static final AimAssist INSTANCE = new AimAssist();
-    
+
     public ModeSetting mode = modeSetting("Mode", "Smoothing mode", "Fast", new String[]{"Fast", "Legit"});
     public DoubleSetting range = doubleSetting("Range", "Target detection range", 4.2, 1.0, 8.0, 0.1);
     public DoubleSetting speed = doubleSetting("Speed", "Rotation speed", 10.0, 1.0, 180.0, 1.0);
@@ -103,13 +103,13 @@ public class AimAssist extends Module {
             // Interpolate rotation: current + (target - current) * factor
             // This logic mimics the kotlin reference: 
             // currentRotation.yaw + (rotation.yaw - currentRotation.yaw) * (timerSpeed * partialTicks)
-            
+
             float yawDiff = targetRotation.x - playerRotation.x;
             float pitchDiff = targetRotation.y - playerRotation.y;
-            
+
             // Wrap degrees for yaw to ensure shortest path
             yawDiff = Mth.wrapDegrees(yawDiff);
-            
+
             float interpolatedYaw = playerRotation.x + yawDiff * (timerSpeed * partialTicks);
             float interpolatedPitch = playerRotation.y + pitchDiff * (timerSpeed * partialTicks);
 
@@ -120,7 +120,7 @@ public class AimAssist extends Module {
 
     private LivingEntity findTarget() {
         List<LivingEntity> targets = new ArrayList<>();
-        
+
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (!(entity instanceof LivingEntity living)) continue;
             if (living == mc.player) continue;
@@ -130,7 +130,7 @@ public class AimAssist extends Module {
             if (dist > range.getValue()) continue;
 
             if (!isValidTarget(living)) continue;
-            
+
             targets.add(living);
         }
 

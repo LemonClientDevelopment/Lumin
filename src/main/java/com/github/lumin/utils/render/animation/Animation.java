@@ -1,5 +1,7 @@
 package com.github.lumin.utils.render.animation;
 
+import net.minecraft.util.Util;
+
 public class Animation {
 
     private final Easing easing;
@@ -14,12 +16,12 @@ public class Animation {
 
     public Animation(Easing easing, long duration) {
         this.easing = easing;
-        this.startTime = System.currentTimeMillis();
+        this.startTime = Util.getMillis();
         this.duration = duration;
     }
 
     public void run(float destinationValue) {
-        this.millis = System.currentTimeMillis();
+        this.millis = Util.getMillis();
         if (this.destinationValue != destinationValue) {
             this.destinationValue = destinationValue;
             this.reset();
@@ -46,11 +48,11 @@ public class Animation {
     }
 
     public float getProgress() {
-        return (float) (System.currentTimeMillis() - this.startTime) / (float) this.duration;
+        return (float) (Util.getMillis() - this.startTime) / (float) this.duration;
     }
 
     public void reset() {
-        this.startTime = System.currentTimeMillis();
+        this.startTime = Util.getMillis();
         this.startValue = value;
         this.finished = false;
     }

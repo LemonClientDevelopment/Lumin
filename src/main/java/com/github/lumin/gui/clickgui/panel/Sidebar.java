@@ -6,6 +6,8 @@ import com.github.lumin.gui.IComponent;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.utils.render.MouseUtils;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -25,6 +27,8 @@ public class Sidebar implements IComponent {
     private final List<CategoryBar> categoryBars = new ArrayList<>();
     private Category selectedCategory = Category.values()[0];
     private Consumer<Category> onSelect;
+    private final Animation selectedHighlightY = new Animation(Easing.EASE_OUT_QUAD, 160L);
+    private boolean highlightInitialized;
 
     public Sidebar() {
         for (Category category : Category.values()) {
@@ -146,13 +150,29 @@ public class Sidebar implements IComponent {
             float itemWidth = width - padding * 2 - itemPadding * 2;
             float itemX = headX + itemPadding;
 
+            float selectedTargetY = currentY;
             for (CategoryBar bar : categoryBars) {
                 bar.x = itemX;
                 bar.y = currentY;
                 bar.width = itemWidth;
                 bar.height = itemHeight;
-                bar.render(set, mouseX, mouseY, guiScale);
+                if (bar.category == selectedCategory) {
+                    selectedTargetY = currentY;
+                }
                 currentY += itemHeight + itemPadding;
+            }
+
+            if (!highlightInitialized) {
+                selectedHighlightY.setStartValue(selectedTargetY);
+                highlightInitialized = true;
+            }
+            selectedHighlightY.run(selectedTargetY);
+            float hy = selectedHighlightY.getValue();
+
+            set.bottomRoundRect().addRoundRect(itemX, hy, itemWidth, itemHeight, 8.0f * guiScale, new Color(255, 255, 255, 52));
+
+            for (CategoryBar bar : categoryBars) {
+                bar.render(set, mouseX, mouseY, guiScale);
             }
         }
     }
@@ -171,8 +191,8 @@ public class Sidebar implements IComponent {
             boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
             boolean isSelected = category == selectedCategory;
 
-            if (hovered || isSelected) {
-                set.bottomRoundRect().addRoundRect(x, y, width, height, 8 * guiScale, isSelected ? new Color(255, 255, 255, 60) : new Color(255, 255, 255, 30));
+            if (hovered && !isSelected) {
+                set.bottomRoundRect().addRoundRect(x, y, width, height, 8 * guiScale, new Color(255, 255, 255, 30));
             }
 
             float iconScale = guiScale * 1.0f;
@@ -213,7 +233,7 @@ public class Sidebar implements IComponent {
                 return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Override

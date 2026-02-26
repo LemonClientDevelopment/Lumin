@@ -255,7 +255,6 @@ public class ModuleSettingsView {
         float panelWidth = width * guiScale;
         float panelHeight = height * guiScale;
         if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
-            draggingSettingsScrollbar = false;
             return false;
         }
 

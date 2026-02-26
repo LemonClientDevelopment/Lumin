@@ -10,6 +10,8 @@ import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
 import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.utils.render.MouseUtils;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -27,6 +29,8 @@ public class ContentPanel implements IComponent {
 
     private final ModuleListView listView = new ModuleListView(mc);
     private final ModuleSettingsView settingsView = new ModuleSettingsView(mc);
+    private final Animation viewAnimation = new Animation(Easing.EASE_OUT_QUAD, 150L);
+    private boolean closeSettingsRequested;
 
     public void setBounds(float x, float y, float width, float height) {
         this.x = x;
@@ -38,6 +42,7 @@ public class ContentPanel implements IComponent {
     public void setCurrentCategory(Category category) {
         if (this.currentCategory == category) return;
         this.currentCategory = category;
+        closeSettingsRequested = false;
         settingsView.clearModule();
 
         List<Module> modules = new ArrayList<>();
@@ -59,11 +64,37 @@ public class ContentPanel implements IComponent {
 
         BlurShader.drawRoundedBlur(x, y, panelWidth, panelHeight, 0, radius, radius, 0, new java.awt.Color(30, 30, 30, 245), InterFace.INSTANCE.blurStrength.getValue().floatValue(), 1.0f);
 
-        if (settingsView.isActive()) {
-            settingsView.render(set, x, y, width, height, mouseX, mouseY, deltaTicks);
-        } else {
-            listView.render(set, x, y, width, height, mouseX, mouseY, deltaTicks);
+        float target = (settingsView.isActive() && !closeSettingsRequested) ? 1.0f : 0.0f;
+        viewAnimation.run(target);
+        float t = viewAnimation.getValue();
+        if (t < 0.0f) t = 0.0f;
+        if (t > 1.0f) t = 1.0f;
+
+        float slide = 10.0f * guiScale;
+        float listX = x - slide * t;
+        float settingsX = x + slide * (1.0f - t);
+
+        if (!settingsView.isActive()) {
+            listView.render(set, listX, y, width, height, mouseX, mouseY, deltaTicks);
+            return;
         }
+
+        if (t <= 0.0f) {
+            if (closeSettingsRequested) {
+                settingsView.clearModule();
+                closeSettingsRequested = false;
+            }
+            listView.render(set, listX, y, width, height, mouseX, mouseY, deltaTicks);
+            return;
+        }
+
+        if (t >= 1.0f) {
+            settingsView.render(set, settingsX, y, width, height, mouseX, mouseY, deltaTicks);
+            return;
+        }
+
+        listView.render(set, listX, y, width, height, mouseX, mouseY, deltaTicks);
+        settingsView.render(set, settingsX, y, width, height, mouseX, mouseY, deltaTicks);
     }
 
     @Override
@@ -87,7 +118,7 @@ public class ContentPanel implements IComponent {
         if (settingsView.isActive()) {
             boolean handled = settingsView.mouseClicked(event, focused, x, y, width, height);
             if (settingsView.consumeExitRequest()) {
-                settingsView.clearModule();
+                closeSettingsRequested = true;
                 return true;
             }
             return handled;
@@ -96,6 +127,7 @@ public class ContentPanel implements IComponent {
         boolean handled = listView.mouseClicked(event, focused, x, y, width, height);
         Module open = listView.consumeRequestedSettingsModule();
         if (open != null) {
+            closeSettingsRequested = false;
             settingsView.setModule(open);
             return true;
         }

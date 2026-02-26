@@ -7,6 +7,8 @@ import com.github.lumin.gui.IComponent.RendererSet;
 import com.github.lumin.modules.Module;
 import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.utils.render.MouseUtils;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -251,8 +253,6 @@ public class ModuleListView {
         float panelHeight = height * guiScale;
 
         if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
-            searchFocused = false;
-            draggingScrollbar = false;
             return false;
         }
 
@@ -366,9 +366,12 @@ public class ModuleListView {
         float height;
 
         final Module module;
+        private final Animation hoverAnimation = new Animation(Easing.EASE_OUT_QUAD, 120L);
+        private final Animation enabledAnimation = new Animation(Easing.EASE_OUT_QUAD, 160L);
 
         private ModuleCard(Module module) {
             this.module = module;
+            enabledAnimation.setStartValue(module.isEnabled() ? 1.0f : 0.0f);
         }
 
         private void render(RendererSet set, int mouseX, int mouseY, float guiScale) {
@@ -376,18 +379,30 @@ public class ModuleListView {
 
             boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
 
-            Color bgColor = module.isEnabled() ? new Color(148, 148, 148, 130) : new Color(40, 40, 40, 130);
-            if (hovered) {
-                bgColor = new Color(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), Math.min(255, bgColor.getAlpha() + 30));
-            }
+            hoverAnimation.run(hovered ? 1.0f : 0.0f);
+            enabledAnimation.run(module.isEnabled() ? 1.0f : 0.0f);
+            float ht = clamp01(hoverAnimation.getValue());
+            float et = clamp01(enabledAnimation.getValue());
 
-            set.bottomRoundRect().addRoundRect(x, y, width, height, 10f * guiScale, bgColor);
+            Color offColor = new Color(40, 40, 40, 130);
+            Color onColor = new Color(148, 148, 148, 130);
+            Color base = lerpColor(offColor, onColor, et);
+            int alphaBump = (int) (24.0f * ht);
+            Color bgColor = new Color(base.getRed(), base.getGreen(), base.getBlue(), clamp255(base.getAlpha() + alphaBump));
+
+            float scale = 1.0f + 0.02f * ht;
+            float rw = width * scale;
+            float rh = height * scale;
+            float rx = x - (rw - width) / 2.0f;
+            float ry = y - (rh - height) / 2.0f;
+
+            set.bottomRoundRect().addRoundRect(rx, ry, rw, rh, 10f * guiScale, bgColor);
 
             String moduleName = module.getName();
             String moduleDescription = module.getDescription();
 
             float nameScale = 1.1f * guiScale;
-            float maxNameWidth = width - 14 * guiScale;
+            float maxNameWidth = rw - 14 * guiScale;
             float nameWidth = set.font().getWidth(moduleName, nameScale);
             if (nameWidth > maxNameWidth && nameWidth > 0) {
                 nameScale *= maxNameWidth / nameWidth;
@@ -395,7 +410,7 @@ public class ModuleListView {
             }
 
             float descriptionScale = 0.62f * guiScale;
-            float maxDescriptionWidth = width - 16 * guiScale;
+            float maxDescriptionWidth = rw - 16 * guiScale;
             float descriptionWidth = set.font().getWidth(moduleDescription, descriptionScale);
             if (descriptionWidth > maxDescriptionWidth && descriptionWidth > 0) {
                 descriptionScale *= maxDescriptionWidth / descriptionWidth;
@@ -407,16 +422,35 @@ public class ModuleListView {
             float textGap = 3 * guiScale;
 
             float blockHeight = nameHeight + textGap + descriptionHeight;
-            float startY = y + (height - blockHeight) / 2f;
+            float startY = ry + (rh - blockHeight) / 2f;
 
-            float nameX = x + (width - nameWidth) / 2f;
+            float nameX = rx + (rw - nameWidth) / 2f;
             float nameY = startY - 0.6f * guiScale;
 
-            float descriptionX = x + (width - descriptionWidth) / 2f;
+            float descriptionX = rx + (rw - descriptionWidth) / 2f;
             float descriptionY = startY + nameHeight + textGap - 0.2f * guiScale;
 
             set.font().addText(moduleName, nameX, nameY, nameScale, Color.WHITE);
             set.font().addText(moduleDescription, descriptionX, descriptionY, descriptionScale, new Color(200, 200, 200));
+        }
+
+        private static float clamp01(float v) {
+            if (v < 0.0f) return 0.0f;
+            if (v > 1.0f) return 1.0f;
+            return v;
+        }
+
+        private static int clamp255(int v) {
+            return Math.max(0, Math.min(255, v));
+        }
+
+        private static Color lerpColor(Color a, Color b, float t) {
+            t = clamp01(t);
+            int r = (int) (a.getRed() + (b.getRed() - a.getRed()) * t);
+            int g = (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * t);
+            int bl = (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * t);
+            int al = (int) (a.getAlpha() + (b.getAlpha() - a.getAlpha()) * t);
+            return new Color(clamp255(r), clamp255(g), clamp255(bl), clamp255(al));
         }
     }
 

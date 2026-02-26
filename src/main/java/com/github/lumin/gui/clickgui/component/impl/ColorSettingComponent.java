@@ -5,6 +5,8 @@ import com.github.lumin.gui.Component;
 import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.settings.impl.ColorSetting;
 import com.github.lumin.utils.render.MouseUtils;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -20,6 +22,9 @@ public class ColorSettingComponent extends Component {
 
     private final ColorSetting setting;
     private boolean opened;
+    private final Animation openAnimation = new Animation(Easing.EASE_OUT_QUAD, 120L);
+    private float openMouseX;
+    private float openMouseY;
     private float lastSwatchX;
     private float lastSwatchY;
     private float lastSwatchW;
@@ -27,6 +32,7 @@ public class ColorSettingComponent extends Component {
 
     public ColorSettingComponent(ColorSetting setting) {
         this.setting = setting;
+        openAnimation.setStartValue(0.0f);
     }
 
     public ColorSetting getSetting() {
@@ -55,6 +61,7 @@ public class ColorSettingComponent extends Component {
         if (activePicker == this) {
             activePicker = null;
         }
+        openAnimation.setStartValue(0.0f);
         colorPicker.cancelEditing();
     }
 
@@ -98,6 +105,33 @@ public class ColorSettingComponent extends Component {
         float panelH = ColorPicker.preferredHeight(scale, setting.isAllowAlpha());
         float panelX = lastSwatchX + lastSwatchW - panelW;
         float panelY = (lastSwatchY + lastSwatchH / 2.0f) - panelH / 2.0f;
+
+        openAnimation.run(1.0f);
+        float t = Mth.clamp(openAnimation.getValue(), 0.0f, 1.0f);
+
+        float finalCX = panelX + panelW / 2.0f;
+        float finalCY = panelY + panelH / 2.0f;
+        float cx = Mth.lerp(t, openMouseX, finalCX);
+        float cy = Mth.lerp(t, openMouseY, finalCY);
+        float w = Math.max(1.0f, panelW * t);
+        float h = Math.max(1.0f, panelH * t);
+        float x = cx - w / 2.0f;
+        float y = cy - h / 2.0f;
+        float radius = 7.0f * scale * t;
+
+        if (t < 0.98f) {
+            colorPicker.x = x;
+            colorPicker.y = y;
+            colorPicker.width = w;
+            colorPicker.height = h;
+            set.pickingRound().addRoundRect(x, y, w, h, radius, new Color(0, 0, 0, 120));
+            int outlineAlpha = (int) (10.0f * t);
+            if (outlineAlpha > 0) {
+                set.pickingRound().addRoundRect(x, y, w, h, radius, new Color(255, 255, 255, outlineAlpha));
+            }
+            return;
+        }
+
         colorPicker.render(set, panelX, panelY, panelW, mouseX, mouseY, scale, setting);
     }
 
@@ -108,8 +142,19 @@ public class ColorSettingComponent extends Component {
         float panelH = ColorPicker.preferredHeight(scale, setting.isAllowAlpha());
         float panelX = lastSwatchX + lastSwatchW - panelW;
         float panelY = (lastSwatchY + lastSwatchH / 2.0f) - panelH / 2.0f;
-        float radius = 7.0f * scale;
-        BlurShader.drawRoundedBlur(panelX, panelY, panelW, panelH, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue());
+        float t = Mth.clamp(openAnimation.getValue(), 0.0f, 1.0f);
+        if (t <= 0.0f) return;
+
+        float finalCX = panelX + panelW / 2.0f;
+        float finalCY = panelY + panelH / 2.0f;
+        float cx = Mth.lerp(t, openMouseX, finalCX);
+        float cy = Mth.lerp(t, openMouseY, finalCY);
+        float w = Math.max(1.0f, panelW * t);
+        float h = Math.max(1.0f, panelH * t);
+        float x = cx - w / 2.0f;
+        float y = cy - h / 2.0f;
+        float radius = 7.0f * scale * t;
+        BlurShader.drawRoundedBlur(x, y, w, h, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue() * t);
     }
 
     @Override
@@ -131,6 +176,10 @@ public class ColorSettingComponent extends Component {
                 opened = true;
                 colorPicker.syncFromSetting(setting);
                 activePicker = this;
+                openMouseX = (float) event.x();
+                openMouseY = (float) event.y();
+                openAnimation.setStartValue(0.0f);
+                openAnimation.reset();
             }
             return true;
         }
@@ -157,6 +206,10 @@ public class ColorSettingComponent extends Component {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (opened && event.key() == GLFW.GLFW_KEY_ESCAPE) {
+            closePicker();
+            return true;
+        }
         if (opened && colorPicker.keyPressed(event, setting)) return true;
         return super.keyPressed(event);
     }
@@ -415,7 +468,7 @@ public class ColorSettingComponent extends Component {
 
                 boolean editing = editingChannel == i;
                 Color boxBg = editing ? new Color(255, 255, 255, 22) : new Color(255, 255, 255, 12);
-                set.pickerRound().addRoundRect(boxX, boxY, valueBoxW, boxH, 6.0f * scale, boxBg);
+                set.pickerRound().addRoundRect(boxX, boxY, valueBoxW, boxH, 4.5f * scale, boxBg);
 
                 String valueStr = editing ? editText : String.valueOf(currentV);
                 String valueMeasureStr = editing ? editText : String.valueOf(currentV);

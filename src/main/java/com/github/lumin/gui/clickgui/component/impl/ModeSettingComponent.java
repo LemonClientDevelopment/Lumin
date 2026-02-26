@@ -4,12 +4,16 @@ import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.gui.Component;
 import com.github.lumin.settings.impl.ModeSetting;
 import com.github.lumin.utils.render.MouseUtils;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.input.MouseButtonEvent;
 
 import java.awt.*;
 
 public class ModeSettingComponent extends Component {
     private final ModeSetting setting;
+    private final Animation selectedXAnimation = new Animation(Easing.EASE_OUT_QUAD, 150L);
+    private boolean highlightInitialized;
     private float lastControlX;
     private float lastControlY;
     private float lastControlW;
@@ -75,21 +79,20 @@ public class ModeSettingComponent extends Component {
         float segW = controlW / modes.length;
         float segInnerPad = 6.0f * scale;
 
+        float selectedX = controlX + segW * selectedIndex;
+        if (!highlightInitialized) {
+            selectedXAnimation.setStartValue(selectedX);
+            highlightInitialized = true;
+        }
+        selectedXAnimation.run(selectedX);
+        float ax = selectedXAnimation.getValue();
+
+        Color selectedBg = new Color(255, 255, 255, 26);
+        float selRadius = Math.min(6.0f * scale, controlH / 2.0f);
+        set.bottomRoundRect().addRoundRect(ax, controlY, segW, controlH, selRadius, selectedBg);
+
         for (int i = 0; i < modes.length; i++) {
             float segX = controlX + segW * i;
-
-            if (i == selectedIndex) {
-                Color selectedBg = new Color(255, 255, 255, 26);
-                if (modes.length == 1) {
-                    set.bottomRoundRect().addRoundRect(segX, controlY, segW, controlH, radius, selectedBg);
-                } else if (i == 0) {
-                    set.bottomRoundRect().addRoundRect(segX, controlY, segW, controlH, radius, 0.0f, 0.0f, radius, selectedBg);
-                } else if (i == modes.length - 1) {
-                    set.bottomRoundRect().addRoundRect(segX, controlY, segW, controlH, 0.0f, radius, radius, 0.0f, selectedBg);
-                } else {
-                    set.bottomRoundRect().addRoundRect(segX, controlY, segW, controlH, 0.0f, selectedBg);
-                }
-            }
 
             if (i > 0) {
                 set.bottomRoundRect().addRoundRect(segX, controlY + 2.0f * scale, 1.0f * scale, controlH - 4.0f * scale, 0.0f, new Color(255, 255, 255, 14));

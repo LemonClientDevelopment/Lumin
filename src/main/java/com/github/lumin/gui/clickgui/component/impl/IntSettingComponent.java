@@ -3,6 +3,8 @@ package com.github.lumin.gui.clickgui.component.impl;
 import com.github.lumin.gui.Component;
 import com.github.lumin.settings.impl.IntSetting;
 import com.github.lumin.utils.render.MouseUtils;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -16,6 +18,9 @@ public class IntSettingComponent extends Component {
     private boolean dragging;
     private boolean editing;
     private String editText = "";
+    private final Animation sliderAnimation = new Animation(Easing.EASE_OUT_QUAD, 140L);
+    private final Animation interactionAnimation = new Animation(Easing.EASE_OUT_QUAD, 120L);
+    private final Animation editingAnimation = new Animation(Easing.EASE_OUT_QUAD, 120L);
     private float lastValueBoxX;
     private float lastValueBoxY;
     private float lastValueBoxW;
@@ -27,6 +32,10 @@ public class IntSettingComponent extends Component {
 
     public IntSettingComponent(IntSetting setting) {
         this.setting = setting;
+        float initial = getPercent(setting.getValue(), setting.getMin(), setting.getMax());
+        sliderAnimation.setStartValue(initial);
+        interactionAnimation.setStartValue(0.0f);
+        editingAnimation.setStartValue(0.0f);
     }
 
     public IntSetting getSetting() {
@@ -89,7 +98,10 @@ public class IntSettingComponent extends Component {
         lastValueBoxW = valueBoxW;
         lastValueBoxH = valueBoxH;
 
-        Color valueBg = editing ? new Color(255, 255, 255, 22) : new Color(255, 255, 255, 12);
+        editingAnimation.run(editing ? 1.0f : 0.0f);
+        float et = Mth.clamp(editingAnimation.getValue(), 0.0f, 1.0f);
+        int valueAlpha = (int) Mth.lerp(et, 12.0f, 22.0f);
+        Color valueBg = new Color(255, 255, 255, Mth.clamp(valueAlpha, 0, 255));
         set.bottomRoundRect().addRoundRect(valueBoxX, valueBoxY, valueBoxW, valueBoxH, 6.0f * scale, valueBg);
 
         float valueMaxTextW = Math.max(0.0f, valueBoxW - valueInnerPad * 2.0f);
@@ -107,6 +119,11 @@ public class IntSettingComponent extends Component {
         lastSliderHitH = Math.max(12.0f * scale, sliderHeight);
         lastSliderHitY = getY() + (getHeight() - lastSliderHitH) / 2.0f;
 
+        boolean sliderHovered = !editing && MouseUtils.isHovering(lastSliderX, lastSliderHitY, lastSliderW, lastSliderHitH, mouseX, mouseY);
+        float interactionTarget = dragging ? 1.0f : (sliderHovered ? 0.6f : 0.0f);
+        interactionAnimation.run(interactionTarget);
+        float it = Mth.clamp(interactionAnimation.getValue(), 0.0f, 1.0f);
+
         if (!editing && dragging) {
             float mouseRelX = mouseX - sliderX;
             float percent = Mth.clamp(mouseRelX / sliderWidth, 0.0f, 1.0f);
@@ -122,23 +139,42 @@ public class IntSettingComponent extends Component {
             setting.setValue(newVal);
         }
 
-        set.bottomRoundRect().addRoundRect(sliderX, sliderY, sliderWidth, sliderHeight, sliderHeight / 2.0f, new Color(60, 60, 60));
+        int track = (int) Mth.lerp(it, 60.0f, 82.0f);
+        set.bottomRoundRect().addRoundRect(sliderX, sliderY, sliderWidth, sliderHeight, sliderHeight / 2.0f, new Color(track, track, track));
 
-        float currentPercent = 0.0f;
-        if (setting.getMax() != setting.getMin()) {
-            currentPercent = (float) (setting.getValue() - setting.getMin()) / (setting.getMax() - setting.getMin());
+        float targetPercent = getPercent(setting.getValue(), setting.getMin(), setting.getMax());
+        if (!editing && dragging) {
+            sliderAnimation.setStartValue(targetPercent);
+        } else {
+            sliderAnimation.run(targetPercent);
         }
-        float filledW = sliderWidth * currentPercent;
+        float animatedPercent = sliderAnimation.getValue();
+        animatedPercent = Mth.clamp(animatedPercent, 0.0f, 1.0f);
+
+        float filledW = sliderWidth * animatedPercent;
         filledW = Mth.clamp(filledW, 0.0f, sliderWidth);
 
         if (filledW > 0) {
-            set.bottomRoundRect().addRoundRect(sliderX, sliderY, filledW, sliderHeight, sliderHeight / 2.0f, new Color(148, 148, 148));
+            int fill = (int) Mth.lerp(it, 148.0f, 176.0f);
+            set.bottomRoundRect().addRoundRect(sliderX, sliderY, filledW, sliderHeight, sliderHeight / 2.0f, new Color(fill, fill, fill));
         }
 
-        float knobSize = 8.0f * scale;
+        float knobSize = 8.0f * scale * (1.0f + 0.35f * it);
         float knobX = sliderX + filledW - knobSize / 2.0f;
         float knobY = getY() + (getHeight() - knobSize) / 2.0f;
+        float glowSize = knobSize + 4.0f * scale;
+        float glowX = (sliderX + filledW) - glowSize / 2.0f;
+        float glowY = getY() + (getHeight() - glowSize) / 2.0f;
+        int glowA = (int) (42.0f * it);
+        if (glowA > 0) {
+            set.bottomRoundRect().addRoundRect(glowX, glowY, glowSize, glowSize, glowSize / 2.0f, new Color(255, 255, 255, Mth.clamp(glowA, 0, 255)));
+        }
         set.bottomRoundRect().addRoundRect(knobX, knobY, knobSize, knobSize, knobSize / 2.0f, Color.WHITE);
+    }
+
+    private static float getPercent(int value, int min, int max) {
+        if (max == min) return 0.0f;
+        return (float) (value - min) / (float) (max - min);
     }
 
     @Override
