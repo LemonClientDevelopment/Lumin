@@ -1,5 +1,6 @@
 package com.github.lumin.gui.clickgui.panel;
 
+import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.gui.IComponent;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.impl.client.InterFace;
@@ -55,6 +56,10 @@ public class Sidebar implements IComponent {
 
         float width = this.width * guiScale;
         float height = this.height * guiScale;
+
+        if (InterFace.INSTANCE.backgroundBlur.getValue() && InterFace.INSTANCE.blurMode.is("OnlyCategory")) {
+            BlurShader.drawRoundedBlur(x, y, width, height, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue());
+        }
 
         Color color = new Color(25, 25, 25, 130);
         set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, color);

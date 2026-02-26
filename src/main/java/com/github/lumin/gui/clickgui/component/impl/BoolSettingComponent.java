@@ -22,7 +22,7 @@ public class BoolSettingComponent extends Component {
     public void render(RendererSet set, int mouseX, int mouseY, float partialTicks) {
         if (!setting.isAvailable()) return;
 
-        boolean hovered = !ColorSettingComponent.isMouseOverPicker(mouseX, mouseY) && MouseUtils.isHovering(getX(), getY(), getWidth(), getHeight(), mouseX, mouseY);
+        boolean hovered = ColorSettingComponent.isMouseOutOfPicker(mouseX, mouseY) && MouseUtils.isHovering(getX(), getY(), getWidth(), getHeight(), mouseX, mouseY);
         Color bg = hovered ? new Color(255, 255, 255, 18) : new Color(255, 255, 255, 10);
         set.bottomRoundRect().addRoundRect(getX(), getY(), getWidth(), getHeight(), 6.0f * scale, bg);
 

@@ -3,7 +3,6 @@ package com.github.lumin.gui.clickgui.panel;
 import com.github.lumin.graphics.renderers.RoundRectRenderer;
 import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.graphics.renderers.TextureRenderer;
-import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.gui.IComponent;
 import com.github.lumin.modules.impl.client.InterFace;
 import net.minecraft.client.Minecraft;
@@ -34,7 +33,6 @@ public class Panel implements IComponent {
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
 
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float radius = guiScale * 8f;
 
         float screenWidth = mc.getWindow().getGuiScaledWidth();
         float screenHeight = mc.getWindow().getGuiScaledHeight();
@@ -50,10 +48,6 @@ public class Panel implements IComponent {
 
         x *= guiScale;
         y *= guiScale;
-
-        if (InterFace.INSTANCE.backgroundBlur.getValue()) {
-            BlurShader.drawRoundedBlur(x, y, width, height, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue());
-        }
 
         float sidebarWidth = width / 4; // 比例为1:4
         float contentWidth = width - sidebarWidth;

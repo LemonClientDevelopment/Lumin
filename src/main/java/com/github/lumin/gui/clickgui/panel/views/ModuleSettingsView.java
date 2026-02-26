@@ -5,6 +5,7 @@ import com.github.lumin.graphics.renderers.RoundRectRenderer;
 import com.github.lumin.graphics.renderers.TextRenderer;
 import com.github.lumin.gui.IComponent.RendererSet;
 import com.github.lumin.gui.clickgui.component.ModuleComponent;
+import com.github.lumin.gui.clickgui.component.impl.ColorSettingComponent;
 import com.github.lumin.modules.Module;
 import com.github.lumin.modules.impl.client.InterFace;
 import com.github.lumin.utils.render.MouseUtils;
@@ -57,6 +58,7 @@ public class ModuleSettingsView {
     }
 
     public void setModule(Module module) {
+        ColorSettingComponent.closeActivePicker();
         settingsComponent = new ModuleComponent(module);
         searchText = "";
         searchFocused = false;
@@ -68,6 +70,7 @@ public class ModuleSettingsView {
     }
 
     public void clearModule() {
+        ColorSettingComponent.closeActivePicker();
         settingsComponent = null;
         searchText = "";
         searchFocused = false;
@@ -279,17 +282,13 @@ public class ModuleSettingsView {
                 }
                 float clickY = (float) event.y();
                 float ratio = (clickY - lastSettingsScrollbarY - lastSettingsThumbH / 2.0f) / thumbTravel;
-                ratio = Math.max(0.0f, Math.min(1.0f, ratio));
+                ratio = Mth.clamp(ratio, 0.0f, 1.0f);
                 settingsScrollTarget = ratio * settingsMaxScroll;
                 draggingSettingsScrollbar = true;
                 settingsScrollbarDragStartMouseY = (float) event.y();
                 settingsScrollbarDragStartScroll = settingsScrollTarget;
                 return true;
             }
-        }
-
-        if (!MouseUtils.isHovering(lastSettingsX, lastSettingsY, lastSettingsW, lastSettingsH, event.x(), event.y())) {
-            return true;
         }
 
         return settingsComponent.mouseClicked(event, focused);

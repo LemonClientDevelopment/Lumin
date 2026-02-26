@@ -2,6 +2,7 @@ package com.github.lumin.gui.clickgui;
 
 import com.github.lumin.graphics.renderers.RectRenderer;
 import com.github.lumin.graphics.shaders.BlurShader;
+import com.github.lumin.gui.clickgui.component.impl.ColorSettingComponent;
 import com.github.lumin.gui.clickgui.panel.Panel;
 import com.github.lumin.modules.impl.client.ClickGui;
 import com.github.lumin.modules.impl.client.InterFace;
@@ -72,6 +73,7 @@ public class ClickGuiScreen extends Screen {
 
     @Override
     public void onClose() {
+        ColorSettingComponent.closeActivePicker();
         ClickGui.INSTANCE.setEnabled(false);
     }
 

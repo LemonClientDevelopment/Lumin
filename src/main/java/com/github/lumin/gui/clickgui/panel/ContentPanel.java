@@ -2,6 +2,7 @@ package com.github.lumin.gui.clickgui.panel;
 
 import com.github.lumin.graphics.shaders.BlurShader;
 import com.github.lumin.gui.IComponent;
+import com.github.lumin.gui.clickgui.component.impl.ColorSettingComponent;
 import com.github.lumin.gui.clickgui.panel.views.ModuleListView;
 import com.github.lumin.gui.clickgui.panel.views.ModuleSettingsView;
 import com.github.lumin.managers.Managers;
@@ -70,6 +71,13 @@ public class ContentPanel implements IComponent {
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float panelWidth = this.width * guiScale;
         float panelHeight = this.height * guiScale;
+
+        // 检查是否有活动的 Picker，并且点击是否在 Picker 外部
+        if (ColorSettingComponent.hasActivePicker() && ColorSettingComponent.isMouseOutOfPicker((int) event.x(), (int) event.y())) {
+            ColorSettingComponent.closeActivePicker();
+            return true; // 消耗事件，防止误触其他组件
+        }
+
         if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
             listView.clickOutside();
             settingsView.clickOutside();

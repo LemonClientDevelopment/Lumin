@@ -29,6 +29,25 @@ public class RoundRectRenderer implements IRenderer {
         addRoundRect(x, y, width, height, radius, radius, radius, radius, color);
     }
 
+    public void addRoundRect(float x, float y, float width, float height, float radius, Color c1, Color c2, Color c3, Color c4) {
+        buffer.tryMap();
+        flushBufferFlag = true;
+
+        float x2 = x + width;
+        float y2 = y + height;
+
+        float innerX1 = x + radius;
+        float innerY1 = y + radius;
+        float innerX2 = x2 - radius;
+        float innerY2 = y2 - radius;
+
+        // TL -> TR -> BR -> BL
+        addVertex(x, y, innerX1, innerY1, innerX2, innerY2, radius, c1.getRGB());
+        addVertex(x2, y, innerX1, innerY1, innerX2, innerY2, radius, c2.getRGB());
+        addVertex(x2, y2, innerX1, innerY1, innerX2, innerY2, radius, c3.getRGB());
+        addVertex(x, y2, innerX1, innerY1, innerX2, innerY2, radius, c4.getRGB());
+    }
+
     public void addRoundRect(float x, float y, float width, float height, float rTL, float rTR, float rBR, float rBL, Color color) {
         buffer.tryMap();
         flushBufferFlag = true;

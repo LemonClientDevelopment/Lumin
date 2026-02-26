@@ -12,6 +12,8 @@ import org.lwjgl.glfw.GLFW;
 import java.awt.*;
 
 public class ColorSettingComponent extends Component {
+
+    private final ColorPicker colorPicker = new ColorPicker();
     private static ColorSettingComponent activePicker = null;
 
     private final ColorSetting setting;
@@ -20,7 +22,6 @@ public class ColorSettingComponent extends Component {
     private float lastSwatchY;
     private float lastSwatchW;
     private float lastSwatchH;
-    private final PickingPanel pickingPanel = new PickingPanel();
 
     public ColorSettingComponent(ColorSetting setting) {
         this.setting = setting;
@@ -30,26 +31,36 @@ public class ColorSettingComponent extends Component {
         return setting;
     }
 
-    public static boolean isMouseOverPicker(int mouseX, int mouseY) {
-        return activePicker != null && activePicker.pickingPanel.isHovering(mouseX, mouseY);
+    public static boolean isMouseOutOfPicker(int mouseX, int mouseY) {
+        return activePicker == null || !activePicker.colorPicker.isHovering(mouseX, mouseY);
+    }
+
+    public static boolean hasActivePicker() {
+        return activePicker != null;
+    }
+
+    public static void closeActivePicker() {
+        if (activePicker != null) {
+            activePicker.closePicker();
+        }
     }
 
     private void closePicker() {
         if (opened) {
-            pickingPanel.applyEditing(setting);
+            colorPicker.applyEditing(setting);
             opened = false;
         }
         if (activePicker == this) {
             activePicker = null;
         }
-        pickingPanel.cancelEditing();
+        colorPicker.cancelEditing();
     }
 
     @Override
     public void render(RendererSet set, int mouseX, int mouseY, float partialTicks) {
         if (!setting.isAvailable()) return;
 
-        boolean hovered = !isMouseOverPicker(mouseX, mouseY) && MouseUtils.isHovering(getX(), getY(), getWidth(), getHeight(), mouseX, mouseY);
+        boolean hovered = isMouseOutOfPicker(mouseX, mouseY) && MouseUtils.isHovering(getX(), getY(), getWidth(), getHeight(), mouseX, mouseY);
         Color bg = hovered ? new Color(255, 255, 255, 18) : new Color(255, 255, 255, 10);
         set.bottomRoundRect().addRoundRect(getX(), getY(), getWidth(), getHeight(), 6.0f * scale, bg);
 
@@ -81,11 +92,11 @@ public class ColorSettingComponent extends Component {
 
     public void renderOverlay(RendererSet set, int mouseX, int mouseY, float partialTicks) {
         if (!opened) return;
-        float panelW = PickingPanel.preferredWidth(scale);
-        float panelH = PickingPanel.preferredHeight(scale, setting.isAllowAlpha());
+        float panelW = ColorPicker.preferredWidth(scale);
+        float panelH = ColorPicker.preferredHeight(scale, setting.isAllowAlpha());
         float panelX = lastSwatchX + lastSwatchW - panelW;
         float panelY = (lastSwatchY + lastSwatchH / 2.0f) - panelH / 2.0f;
-        pickingPanel.render(set, panelX, panelY, panelW, mouseX, mouseY, scale, setting);
+        colorPicker.render(set, panelX, panelY, panelW, mouseX, mouseY, scale, setting);
     }
 
     @Override
@@ -93,7 +104,7 @@ public class ColorSettingComponent extends Component {
         if (!setting.isAvailable()) return super.mouseClicked(event, focused);
 
         // 如果有活动的 Picker 且鼠标悬停在它的面板上，拦截其他组件的点击
-        if (activePicker != null && activePicker != this && activePicker.pickingPanel.isHovering(event.x(), event.y())) {
+        if (activePicker != null && activePicker != this && activePicker.colorPicker.isHovering(event.x(), event.y())) {
             return false;
         }
 
@@ -105,15 +116,15 @@ public class ColorSettingComponent extends Component {
                     activePicker.closePicker();
                 }
                 opened = true;
-                pickingPanel.syncFromSetting(setting);
+                colorPicker.syncFromSetting(setting);
                 activePicker = this;
             }
             return true;
         }
 
         if (opened) {
-            if (pickingPanel.mouseClicked(event, setting)) return true;
-            if (pickingPanel.isHovering(event.x(), event.y())) {
+            if (colorPicker.mouseClicked(event, setting)) return true;
+            if (colorPicker.isHovering(event.x(), event.y())) {
                 return true;
             }
             closePicker();
@@ -126,26 +137,24 @@ public class ColorSettingComponent extends Component {
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         if (opened) {
-            pickingPanel.mouseReleased();
+            colorPicker.mouseReleased();
         }
         return super.mouseReleased(event);
     }
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (opened && pickingPanel.keyPressed(event, setting)) return true;
+        if (opened && colorPicker.keyPressed(event, setting)) return true;
         return super.keyPressed(event);
     }
 
     @Override
     public boolean charTyped(CharacterEvent event) {
-        if (opened && pickingPanel.charTyped(event)) return true;
+        if (opened && colorPicker.charTyped(event)) return true;
         return super.charTyped(event);
     }
 
-    private static class PickingPanel {
-        private static final int PICKER_STEPS = 24;
-        private static final int HUE_STEPS = 18;
+    private static class ColorPicker {
         private static final int CHANNEL_NONE = -1;
         private static final int CHANNEL_R = 0;
         private static final int CHANNEL_G = 1;
@@ -178,14 +187,14 @@ public class ColorSettingComponent extends Component {
         private int editingChannel = CHANNEL_NONE;
         private String editText = "";
 
-        private float[] channelSliderX = new float[4];
-        private float[] channelSliderY = new float[4];
-        private float[] channelSliderW = new float[4];
-        private float[] channelSliderH = new float[4];
-        private float[] channelBoxX = new float[4];
-        private float[] channelBoxY = new float[4];
-        private float[] channelBoxW = new float[4];
-        private float[] channelBoxH = new float[4];
+        private final float[] channelSliderX = new float[4];
+        private final float[] channelSliderY = new float[4];
+        private final float[] channelSliderW = new float[4];
+        private final float[] channelSliderH = new float[4];
+        private final float[] channelBoxX = new float[4];
+        private final float[] channelBoxY = new float[4];
+        private final float[] channelBoxW = new float[4];
+        private final float[] channelBoxH = new float[4];
 
         public static float preferredHeight(float scale, boolean allowAlpha) {
             int channelCount = allowAlpha ? 4 : 3;
@@ -259,13 +268,9 @@ public class ColorSettingComponent extends Component {
             float rowGap = 5.0f * scale;
             float rowsTop = pickerY + pickerSize + pad;
 
-            // 让面板宽度适应 picker + gap + hueBar 的总宽度
-            // float totalContentWidth = pickerSize + gap + hueW;
-            // float minWidth = totalContentWidth + pad * 2.0f;
-            // if (w < minWidth) w = minWidth; // 确保宽度足够
-
             this.height = (rowsTop - y) + channelCount * rowH + Math.max(0, channelCount - 1) * rowGap + pad;
 
+            //BlurShader.drawRoundedBlur(x, y, w, height, radius, 15.0f);
             set.pickingRound().addRoundRect(x, y, w, height, radius, new Color(0, 0, 0, 120));
 
             int[] rgba = getRgba(setting);
@@ -322,11 +327,11 @@ public class ColorSettingComponent extends Component {
             float indicatorR = 4.0f * scale;
             float indX = pickerX + sat * pickerSize;
             float indY = pickerY + (1.0f - bri) * pickerSize;
-            set.pickingRound().addRoundRect(indX - indicatorR - 1.0f * scale, indY - indicatorR - 1.0f * scale, (indicatorR + 1.0f * scale) * 2.0f, (indicatorR + 1.0f * scale) * 2.0f, (indicatorR + 1.0f * scale), new Color(0, 0, 0, 160));
-            set.pickingRound().addRoundRect(indX - indicatorR, indY - indicatorR, indicatorR * 2.0f, indicatorR * 2.0f, indicatorR, new Color(255, 255, 255, 220));
+            set.pickerRound().addRoundRect(indX - indicatorR - 1.0f * scale, indY - indicatorR - 1.0f * scale, (indicatorR + 1.0f * scale) * 2.0f, (indicatorR + 1.0f * scale) * 2.0f, (indicatorR + 1.0f * scale), new Color(0, 0, 0, 160));
+            set.pickerRound().addRoundRect(indX - indicatorR, indY - indicatorR, indicatorR * 2.0f, indicatorR * 2.0f, indicatorR, new Color(255, 255, 255, 220));
 
             float hueIndY = hueY + hue * hueH;
-            set.pickingRound().addRoundRect(hueX - 2.0f * scale, hueIndY - 2.0f * scale, hueW + 4.0f * scale, 4.0f * scale, 2.0f * scale, new Color(255, 255, 255, 200));
+            set.pickerRound().addRoundRect(hueX - 2.0f * scale, hueIndY - 2.0f * scale, hueW + 4.0f * scale, 4.0f * scale, 2.0f * scale, new Color(255, 255, 255, 200));
 
             float textScale = 0.80f * scale;
             float boxInnerPad = 4.0f * scale;
@@ -371,27 +376,34 @@ public class ColorSettingComponent extends Component {
                 int currentV = channelValue(i, r, g, b, a);
                 float filledW = sliderW * (currentV / 255.0f);
                 filledW = (float) Mth.clamp(filledW, 0.0, sliderW);
+
                 if (filledW > 0.0f) {
                     Color left = channelColorMin(i, r, g, b, a);
                     Color right = channelColorMax(i, r, g, b, a);
-                    int steps = 12;
-                    float stepW = filledW / steps;
-                    for (int s = 0; s < steps; s++) {
-                        float t = steps <= 1 ? 1.0f : (float) s / (steps - 1);
-                        Color c = lerp(left, right, t);
-                        float rx = sliderX + stepW * s;
-                        float rw = (s == steps - 1) ? (sliderX + filledW - rx) : stepW;
-                        set.pickingRound().addRoundRect(rx, sliderY, rw, sliderH, sliderH / 2.0f, c);
+                    Color currentC = lerp(left, right, currentV / 255.0f);
+
+                    if (filledW > sliderH) {
+                        // 左端圆头
+                        set.pickingRound().addRoundRect(sliderX, sliderY, sliderH, sliderH, sliderH / 2.0f, left);
+
+                        // 中间渐变段
+                        set.pickingRect().addHorizontalGradient(sliderX + sliderH / 2.0f, sliderY, filledW - sliderH, sliderH, left, currentC);
+
+                        // 右端圆头
+                        set.pickerRound().addRoundRect(sliderX + filledW - sliderH, sliderY, sliderH, sliderH, sliderH / 2.0f, currentC);
+                    } else {
+                        // 进度很短时，直接画一个圆角矩形
+                        set.pickerRound().addRoundRect(sliderX, sliderY, filledW, sliderH, sliderH / 2.0f, left);
                     }
                 }
 
                 float knobX = sliderX + filledW - knobSize / 2.0f;
                 float knobY = rowY + (rowH - knobSize) / 2.0f;
-                set.pickingRound().addRoundRect(knobX, knobY, knobSize, knobSize, knobSize / 2.0f, Color.WHITE);
+                set.pickerRound().addRoundRect(knobX, knobY, knobSize, knobSize, knobSize / 2.0f, Color.WHITE);
 
                 boolean editing = editingChannel == i;
                 Color boxBg = editing ? new Color(255, 255, 255, 22) : new Color(255, 255, 255, 12);
-                set.pickingRound().addRoundRect(boxX, boxY, valueBoxW, boxH, 6.0f * scale, boxBg);
+                set.pickerRound().addRoundRect(boxX, boxY, valueBoxW, boxH, 6.0f * scale, boxBg);
 
                 String valueStr = editing ? editText : String.valueOf(currentV);
                 String valueMeasureStr = editing ? editText : String.valueOf(currentV);
@@ -548,22 +560,36 @@ public class ColorSettingComponent extends Component {
 
             // 第二层：垂直渐变，上透明 -> 下黑色 (亮度控制)
             set.pickingRect().addVerticalGradient(x, y, size, size, new Color(0, 0, 0, 0), Color.BLACK);
-
-            // 绘制边框
-            set.pickerRound().addRoundRect(x - 1.0f * scale, y - 1.0f * scale, size + 2.0f * scale, size + 2.0f * scale, 6.0f * scale, new Color(255, 255, 255, 18));
         }
 
         private static void drawHueBar(RendererSet set, float x, float y, float w, float h, float scale) {
-            int steps = HUE_STEPS;
-            float rowH = h / steps;
+            // 色相条由多个垂直渐变段组成，形成平滑的彩虹色
+            // 色相环: 红 -> 黄 -> 绿 -> 青 -> 蓝 -> 洋红 -> 红
+            // 0 -> 60 -> 120 -> 180 -> 240 -> 300 -> 360
+
+            int steps = 6; // 6个主色相区间
+            float segmentH = h / steps;
+
+            // 定义主色相点
+            // HSB(0, 1, 1) = Red
+            // HSB(1/6, 1, 1) = Yellow
+            // ...
+
             for (int i = 0; i < steps; i++) {
-                float t = (float) i / (steps - 1);
-                int rgb = Color.HSBtoRGB(t, 1.0f, 1.0f);
-                Color c = new Color((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, 255);
-                float ry = y + i * rowH;
-                float rh = (i == steps - 1) ? (y + h - ry) : rowH;
-                set.pickingRound().addRoundRect(x, ry, w, rh, 0.0f, c);
+                float startHue = (float) i / steps;
+                float endHue = (float) (i + 1) / steps;
+
+                Color c1 = Color.getHSBColor(startHue, 1.0f, 1.0f);
+                Color c2 = Color.getHSBColor(endHue, 1.0f, 1.0f);
+
+                float segY = y + i * segmentH;
+                // 为了防止缝隙，可以稍微延伸一点点高度，或者就用精确浮点
+                // 这里直接用 segmentH
+
+                set.pickingRect().addVerticalGradient(x, segY, w, segmentH, c1, c2);
             }
+
+            // 绘制边框
             set.pickingRound().addRoundRect(x - 1.0f * scale, y - 1.0f * scale, w + 2.0f * scale, h + 2.0f * scale, 6.0f * scale, new Color(255, 255, 255, 18));
         }
 
@@ -603,6 +629,6 @@ public class ColorSettingComponent extends Component {
             int al = (int) (a.getAlpha() + (b.getAlpha() - a.getAlpha()) * t);
             return new Color(Mth.clamp(r, 0, 255), Mth.clamp(g, 0, 255), Mth.clamp(bl, 0, 255), Mth.clamp(al, 0, 255));
         }
-
     }
+
 }
