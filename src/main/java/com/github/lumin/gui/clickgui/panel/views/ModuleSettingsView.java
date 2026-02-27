@@ -254,6 +254,11 @@ public class ModuleSettingsView {
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float panelWidth = width * guiScale;
         float panelHeight = height * guiScale;
+
+        if (ColorSettingComponent.hasActivePicker() && !ColorSettingComponent.isMouseOutOfPicker((int) event.x(), (int) event.y())) {
+            return settingsComponent.mouseClicked(event, focused);
+        }
+
         if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
             return false;
         }
@@ -300,6 +305,9 @@ public class ModuleSettingsView {
     public boolean mouseReleased(MouseButtonEvent event, float x, float y, float width, float height) {
         draggingSettingsScrollbar = false;
         if (settingsComponent == null) return false;
+        if (ColorSettingComponent.hasActivePicker()) {
+            return settingsComponent.mouseReleased(event);
+        }
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float panelWidth = width * guiScale;
         float panelHeight = height * guiScale;

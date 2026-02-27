@@ -4,9 +4,12 @@ import com.github.lumin.graphics.LuminRenderPipelines;
 import com.github.lumin.graphics.LuminRenderSystem;
 import com.github.lumin.graphics.buffer.LuminBuffer;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.rendertype.TextureTransform;
 import net.minecraft.util.ARGB;
 import org.lwjgl.system.MemoryUtil;
 
@@ -15,6 +18,8 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 public class LineRenderer implements IRenderer {
+
+    private final Minecraft mc = Minecraft.getInstance();
 
     private static final long BUFFER_SIZE = 512 * 1024;
     private static final int STRIDE = 16;
@@ -91,7 +96,7 @@ public class LineRenderer implements IRenderer {
 
         LuminRenderSystem.applyOrthoProjection();
 
-        var target = net.minecraft.client.Minecraft.getInstance().getMainRenderTarget();
+        var target = mc.getMainRenderTarget();
         if (target.getColorTextureView() == null) return;
 
         int indexCount = vertexCount;
@@ -100,11 +105,11 @@ public class LineRenderer implements IRenderer {
                 RenderSystem.getSequentialBuffer(VertexFormat.Mode.LINES);
         GpuBuffer ibo = autoIndices.getBuffer(indexCount);
 
-        com.mojang.blaze3d.buffers.GpuBufferSlice dynamicUniforms = RenderSystem.getDynamicUniforms().writeTransform(
+        GpuBufferSlice dynamicUniforms = RenderSystem.getDynamicUniforms().writeTransform(
                 RenderSystem.getModelViewMatrix(),
                 new org.joml.Vector4f(1, 1, 1, 1),
                 new org.joml.Vector3f(0, 0, 0),
-                net.minecraft.client.renderer.rendertype.TextureTransform.DEFAULT_TEXTURING.getMatrix()
+                TextureTransform.DEFAULT_TEXTURING.getMatrix()
         );
 
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(

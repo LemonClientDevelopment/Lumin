@@ -237,7 +237,7 @@ public class RotationManager {
         }
     }
 
-    @SubscribeEvent//(priority = EventPriority.LOWEST)
+    @SubscribeEvent
     private void onMotion(MotionEvent event) {
         if (active && rotations != null) {
             float yaw = rotations.x;

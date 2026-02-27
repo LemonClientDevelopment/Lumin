@@ -42,6 +42,10 @@ public class IntSettingComponent extends Component {
         return setting;
     }
 
+    public boolean isDragging() {
+        return dragging;
+    }
+
     @Override
     public void render(RendererSet set, int mouseX, int mouseY, float partialTicks) {
         if (!setting.isAvailable()) return;

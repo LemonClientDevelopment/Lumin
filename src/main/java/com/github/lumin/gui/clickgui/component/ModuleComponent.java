@@ -269,7 +269,6 @@ public class ModuleComponent implements IComponent {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        boolean handled = false;
         for (Component setting : settings) {
             if (!isSettingVisible(setting)) continue;
             if (setting instanceof ColorSettingComponent c && c.isOpened()) {
@@ -278,15 +277,24 @@ public class ModuleComponent implements IComponent {
                 }
             }
         }
-        if (isHovered((int) event.x(), (int) event.y())) {
+        if (hasDraggingSetting() || isHovered((int) event.x(), (int) event.y())) {
             for (Component setting : settings) {
                 if (!isSettingVisible(setting)) continue;
                 if (setting.mouseReleased(event)) {
-                    handled = true;
+                    return true;
                 }
             }
         }
-        return handled || IComponent.super.mouseReleased(event);
+        return IComponent.super.mouseReleased(event);
+    }
+
+    private boolean hasDraggingSetting() {
+        for (Component setting : settings) {
+            if (!isSettingVisible(setting)) continue;
+            if (setting instanceof IntSettingComponent c && c.isDragging()) return true;
+            if (setting instanceof DoubleSettingComponent c && c.isDragging()) return true;
+        }
+        return false;
     }
 
     @Override

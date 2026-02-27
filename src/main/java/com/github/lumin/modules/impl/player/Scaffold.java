@@ -13,9 +13,12 @@ import com.github.lumin.utils.math.MathUtils;
 import com.github.lumin.utils.player.FindItemResult;
 import com.github.lumin.utils.player.InvUtils;
 import com.github.lumin.utils.player.MoveUtils;
+import com.github.lumin.utils.render.Render3DUtils;
+import com.github.lumin.utils.render.animation.Easing;
 import com.github.lumin.utils.rotation.MovementFix;
 import com.github.lumin.utils.rotation.RaytraceUtils;
 import com.github.lumin.utils.rotation.RotationUtils;
+import com.github.lumin.utils.world.BlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -25,13 +28,18 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.*;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Vector2f;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Scaffold extends Module {
 
@@ -39,6 +47,41 @@ public class Scaffold extends Module {
 
     public Scaffold() {
         super("Scaffold", "自动搭路", "Automatically place block under your feet", "紫薇", Category.PLAYER);
+
+        NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent.AfterEntities event) -> {
+            if (nullCheck()) return;
+
+            if (!render.getValue() || renderBoxes.isEmpty()) return;
+
+            long time = System.currentTimeMillis();
+            long fadeTime = this.fadeTime.getValue().longValue();
+
+            renderBoxes.removeIf(box -> time - box.startTime() > fadeTime);
+
+            for (RenderBox box : renderBoxes) {
+                long age = time - box.startTime();
+                float progress = Mth.clamp((float) age / fadeTime, 0.0f, 1.0f);
+
+                double scale = 1.0;
+                if (box.shrink()) {
+                    scale = 1.0 - Easing.EASE_OUT_QUAD.getFunction().apply(progress);
+                    if (scale < 0) scale = 0;
+                }
+
+                float alphaFactor = box.fade() ? Mth.clamp(1.0f - progress, 0.0f, 1.0f) : 1.0f;
+
+                Color sideColor = box.sideColor();
+                Color lineColor = box.lineColor();
+
+                Color side = new Color(sideColor.getRed(), sideColor.getGreen(), sideColor.getBlue(), (int) (sideColor.getAlpha() * alphaFactor));
+                Color line = new Color(lineColor.getRed(), lineColor.getGreen(), lineColor.getBlue(), (int) (lineColor.getAlpha() * alphaFactor));
+
+
+                AABB renderBox = getRenderBox(box, scale);
+
+                Render3DUtils.drawFullBox(event.getPoseStack(), renderBox, side, line);
+            }
+        });
     }
 
     private final ModeSetting mode = modeSetting("Mode", "模式", "Telly", new String[]{"GodBridge", "Telly"});
@@ -55,6 +98,7 @@ public class Scaffold extends Module {
 
     private final BoolSetting render = boolSetting("Render", "渲染", true);
     private final BoolSetting fade = boolSetting("Fade", "变淡", false, render::getValue);
+    private final IntSetting fadeTime = intSetting("FadeTime", "淡出时间", 500, 0, 3000, 50, () -> render.getValue() && fade.getValue());
     private final BoolSetting shrink = boolSetting("Shrink", "收缩", true, render::getValue);
     private final ColorSetting sideColor = colorSetting("Side Color", "侧面颜色", new Color(255, 183, 197, 100), render::getValue);
     private final ColorSetting lineColor = colorSetting("Line Color", "线条颜色", new Color(255, 105, 180), render::getValue);
@@ -67,6 +111,8 @@ public class Scaffold extends Module {
     private boolean shouldSwapBack;
 
     private BlockInfo blockInfo;
+
+    private final List<RenderBox> renderBoxes = new ArrayList<>();
 
     @Override
     protected void onEnable() {
@@ -82,6 +128,7 @@ public class Scaffold extends Module {
         if (shouldSwapBack) {
             InvUtils.swapBack();
         }
+        renderBoxes.clear();
     }
 
     /*@SubscribeEvent
@@ -163,6 +210,22 @@ public class Scaffold extends Module {
         }
     }
 
+    private static AABB getRenderBox(RenderBox boxes, double scale) {
+        AABB renderBox = boxes.aabb;
+        if (boxes.shrink()) {
+            double centerX = renderBox.minX + (renderBox.maxX - renderBox.minX) / 2.0;
+            double centerY = renderBox.minY + (renderBox.maxY - renderBox.minY) / 2.0;
+            double centerZ = renderBox.minZ + (renderBox.maxZ - renderBox.minZ) / 2.0;
+
+            double dx = (renderBox.maxX - renderBox.minX) / 2.0 * scale;
+            double dy = (renderBox.maxY - renderBox.minY) / 2.0 * scale;
+            double dz = (renderBox.maxZ - renderBox.minZ) / 2.0 * scale;
+
+            renderBox = new AABB(centerX - dx, centerY - dy, centerZ - dz, centerX + dx, centerY + dy, centerZ + dz);
+        }
+        return renderBox;
+    }
+
     public static Vec3 getVec3(BlockPos pos, Direction face) {
         double x = (double) pos.getX() + 0.5;
         double y = (double) pos.getY() + 0.5;
@@ -215,7 +278,7 @@ public class Scaffold extends Module {
 
     private void place(FindItemResult item) {
         if (!onAir()) return;
-        //if (!BlockUtils.canPlaceAt(blockInfo.blockPos)) return;
+        if (!BlockUtils.canPlaceAt(blockInfo.blockPos)) return;
 
         switch (swapMode.getValue()) {
             case "Normal" -> {
@@ -236,11 +299,11 @@ public class Scaffold extends Module {
                 } else {
                     mc.getConnection().send(new ServerboundSwingPacket(item.getHand()));
                 }
-            }
 
-            /*if (render.getValue()) {
-                Managers.RENDER.add(blockInfo.blockPos, sideColor.get(), lineColor.get(), fade.get(), shrink.get());
-            }*/
+                if (render.getValue()) {
+                    renderBoxes.add(new RenderBox(new AABB(blockInfo.blockPos), lineColor.getValue(), sideColor.getValue(), System.currentTimeMillis(), fade.getValue(), shrink.getValue()));
+                }
+            }
         }
     }
 
@@ -312,6 +375,10 @@ public class Scaffold extends Module {
     }
 
     private record BlockInfo(BlockPos blockPos, BlockPos position, Direction dir) {
+    }
+
+    private record RenderBox(AABB aabb, Color lineColor, Color sideColor, long startTime, boolean fade,
+                             boolean shrink) {
     }
 
 }

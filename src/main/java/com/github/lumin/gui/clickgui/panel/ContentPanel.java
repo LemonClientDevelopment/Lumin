@@ -103,10 +103,18 @@ public class ContentPanel implements IComponent {
         float panelWidth = this.width * guiScale;
         float panelHeight = this.height * guiScale;
 
-        // 检查是否有活动的 Picker，并且点击是否在 Picker 外部
         if (ColorSettingComponent.hasActivePicker() && ColorSettingComponent.isMouseOutOfPicker((int) event.x(), (int) event.y())) {
             ColorSettingComponent.closeActivePicker();
-            return true; // 消耗事件，防止误触其他组件
+            return true;
+        }
+
+        if (ColorSettingComponent.hasActivePicker() && settingsView.isActive()) {
+            boolean handled = settingsView.mouseClicked(event, focused, x, y, width, height);
+            if (settingsView.consumeExitRequest()) {
+                closeSettingsRequested = true;
+                return true;
+            }
+            return handled;
         }
 
         if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
@@ -136,6 +144,9 @@ public class ContentPanel implements IComponent {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        if (ColorSettingComponent.hasActivePicker() && settingsView.isActive()) {
+            return settingsView.mouseReleased(event, x, y, width, height);
+        }
         if (settingsView.isActive()) {
             return settingsView.mouseReleased(event, x, y, width, height);
         }
