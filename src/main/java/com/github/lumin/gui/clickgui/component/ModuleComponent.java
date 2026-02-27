@@ -288,7 +288,7 @@ public class ModuleComponent implements IComponent {
         return IComponent.super.mouseReleased(event);
     }
 
-    private boolean hasDraggingSetting() {
+    public boolean hasDraggingSetting() {
         for (Component setting : settings) {
             if (!isSettingVisible(setting)) continue;
             if (setting instanceof IntSettingComponent c && c.isDragging()) return true;

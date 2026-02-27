@@ -308,6 +308,9 @@ public class ModuleSettingsView {
         if (ColorSettingComponent.hasActivePicker()) {
             return settingsComponent.mouseReleased(event);
         }
+        if (settingsComponent.hasDraggingSetting()) {
+            return settingsComponent.mouseReleased(event);
+        }
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float panelWidth = width * guiScale;
         float panelHeight = height * guiScale;
