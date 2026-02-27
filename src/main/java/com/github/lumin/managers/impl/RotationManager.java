@@ -11,6 +11,7 @@ import com.github.lumin.utils.rotation.RotationUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
@@ -191,12 +192,15 @@ public class RotationManager {
         return new float[]{Mth.wrapDegrees(yaw), Mth.wrapDegrees(pitch)};
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     private void onClientTick(ClientTickEvent.Pre event) {
         if (mc.player == null || mc.level == null) return;
 
         if (!active || rotations == null || lastRotations == null || targetRotations == null) {
-            rotations = lastRotations = targetRotations = new Vector2f(mc.player.getYRot(), mc.player.getXRot());
+            final var defaultRotation = new Vector2f(mc.player.getYRot(), mc.player.getXRot());
+            targetRotations = defaultRotation;
+            lastRotations = defaultRotation;
+            rotations = defaultRotation;
         }
 
         if (active) {
@@ -233,7 +237,7 @@ public class RotationManager {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent//(priority = EventPriority.LOWEST)
     private void onMotion(MotionEvent event) {
         if (active && rotations != null) {
             float yaw = rotations.x;
