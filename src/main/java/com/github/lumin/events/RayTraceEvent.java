@@ -4,9 +4,10 @@ import net.minecraft.world.entity.Entity;
 import net.neoforged.bus.api.Event;
 
 public class RayTraceEvent extends Event {
-    private final Entity entity;
     private float yaw;
     private float pitch;
+
+    private final Entity entity;
 
     public RayTraceEvent(Entity entity, float yaw, float pitch) {
         this.entity = entity;

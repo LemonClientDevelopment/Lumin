@@ -4,9 +4,9 @@ import net.minecraft.network.protocol.Packet;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;
 
-public class PacketEvent extends Event implements ICancellableEvent {
+public class PacketEvent {
 
-    public static class Send extends PacketEvent {
+    public static class Send extends Event implements ICancellableEvent {
 
         private Packet<?> packet;
 
@@ -24,7 +24,7 @@ public class PacketEvent extends Event implements ICancellableEvent {
 
     }
 
-    public static class Receive extends PacketEvent {
+    public static class Receive extends Event implements ICancellableEvent {
 
         private Packet<?> packet;
 
