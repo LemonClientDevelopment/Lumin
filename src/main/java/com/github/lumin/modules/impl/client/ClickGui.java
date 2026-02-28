@@ -3,6 +3,7 @@ package com.github.lumin.modules.impl.client;
 import com.github.lumin.gui.clickgui.ClickGuiScreen;
 import com.github.lumin.modules.Category;
 import com.github.lumin.modules.Module;
+import com.github.lumin.settings.impl.BoolSetting;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_SHIFT;
 

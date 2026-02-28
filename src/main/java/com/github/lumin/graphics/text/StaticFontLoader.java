@@ -5,7 +5,9 @@ import com.github.lumin.utils.resources.ResourceLocationUtils;
 
 public class StaticFontLoader {
 
-    public static final TtfFontLoader DEFAULT = new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/pingfang.ttf"));
+    public static final TtfFontLoader DEFAULT = new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/ducksans.ttf"));
+
+    public static final TtfFontLoader regular = new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/regular.ttf"));
 
     public static final TtfFontLoader ICONS = new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/icons.ttf"));
 
