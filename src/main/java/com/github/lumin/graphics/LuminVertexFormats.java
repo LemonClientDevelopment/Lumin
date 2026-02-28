@@ -25,11 +25,6 @@ public class LuminVertexFormats {
             .add("Color", VertexFormatElement.COLOR)
             .build();
 
-    public static final VertexFormat BLUR = VertexFormat.builder()
-            .add("Position", VertexFormatElement.POSITION)
-            .add("UV0", VertexFormatElement.UV0)
-            .build();
-
     public static final VertexFormat TEXTURE = VertexFormat.builder()
             .add("Position", VertexFormatElement.POSITION)
             .add("Color", VertexFormatElement.COLOR)

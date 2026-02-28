@@ -34,4 +34,5 @@ public abstract class MixinEntity {
         }
         return instance.getYRot();
     }
+
 }

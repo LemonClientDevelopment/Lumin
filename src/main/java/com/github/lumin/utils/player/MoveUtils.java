@@ -15,30 +15,6 @@ public class MoveUtils {
         return mc.player.zza != 0 || mc.player.xxa != 0;
     }
 
-    public static double getDirection() {
-        float yaw = mc.player.getYRot();
-        float forward = mc.player.zza;
-        float strafe = mc.player.xxa;
-
-        if (forward < 0) {
-            yaw += 180;
-        }
-
-        float modifier = 1;
-        if (forward != 0) {
-            modifier = forward < 0 ? -0.5f : 0.5f;
-        }
-
-        if (strafe > 0) {
-            yaw -= 90 * modifier;
-        }
-        if (strafe < 0) {
-            yaw += 90 * modifier;
-        }
-
-        return Math.toRadians(yaw);
-    }
-
     public static double getDirection(float rotationYaw, final double moveForward, final double moveStrafing) {
         if (moveForward < 0F) rotationYaw += 180F;
 

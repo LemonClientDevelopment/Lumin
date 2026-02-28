@@ -128,21 +128,12 @@ public class Scaffold extends Module {
         if (shouldSwapBack) {
             InvUtils.swapBack();
         }
-        renderBoxes.clear();
     }
-
-    /*@SubscribeEvent
-    private void onMouse(ScreenEvent.MouseButtonPressed.Pre event) {
-        if (mc.screen != null) return;
-        if (event.getButton() == InputConstants.MOUSE_BUTTON_LEFT || event.getButton() == InputConstants.MOUSE_BUTTON_RIGHT) {
-            event.setCanceled(true);
-        }
-    }*/
 
     @SubscribeEvent
     private void onMotion(MotionEvent e) {
         if (safeWalk.getValue() && mode.is("GodBridge")) {
-            //mc.options.keyShift.setDown(mc.player.onGround() && SafeWalk.isOnBlockEdge(0.3F));
+            mc.options.keyShift.setDown(mc.player.onGround() && SafeWalk.isOnBlockEdge(0.3F));
         }
     }
 

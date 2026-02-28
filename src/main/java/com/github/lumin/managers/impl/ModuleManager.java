@@ -5,6 +5,7 @@ import com.github.lumin.modules.impl.client.*;
 import com.github.lumin.modules.impl.combat.AimAssist;
 import com.github.lumin.modules.impl.combat.AutoClicker;
 import com.github.lumin.modules.impl.combat.KillAura;
+import com.github.lumin.modules.impl.player.SafeWalk;
 import com.github.lumin.modules.impl.player.Scaffold;
 import com.github.lumin.modules.impl.player.Sprint;
 import com.github.lumin.modules.impl.visual.RenderTest;
@@ -41,6 +42,7 @@ public class ModuleManager {
                 KillAura.INSTANCE,
 
                 // Player
+                SafeWalk.INSTANCE,
                 Scaffold.INSTANCE,
                 Sprint.INSTANCE,
 

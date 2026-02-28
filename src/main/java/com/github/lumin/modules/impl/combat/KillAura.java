@@ -28,7 +28,13 @@ import java.util.Comparator;
 import java.util.List;
 
 public class KillAura extends Module {
+
     public static final KillAura INSTANCE = new KillAura();
+
+    public KillAura() {
+        super("Killaura", "", "Auto fuck b", "", Category.COMBAT);
+    }
+
     public ModeSetting movefix = modeSetting("Move Fix", "", "Silent", new String[]{"Silent", "Strict"});
     public ModeSetting targetMode = modeSetting("Target Mode", "", "Single", new String[]{"Single", "Switch", "Multi"});
     public DoubleSetting range = doubleSetting("Attack Range", "", 3.0, 1.0, 6.0, 0.01);
@@ -50,10 +56,6 @@ public class KillAura extends Module {
     private int switchIndex = 0;
     public float attacks = 0;
 
-    public KillAura() {
-        super("Killaura", "", "Auto fuck b", "", Category.COMBAT);
-    }
-
     @Override
     protected void onDisable() {
         target = null;
@@ -64,8 +66,9 @@ public class KillAura extends Module {
     @SubscribeEvent
     public void onTick(ClientTickEvent.Pre e) {
         if (nullCheck()) return;
+
         targets.clear();
-        getTargets();
+        updateTargets();
 
         if (targets.isEmpty()) {
             target = null;
@@ -121,7 +124,7 @@ public class KillAura extends Module {
         mc.player.swing(InteractionHand.MAIN_HAND);
     }
 
-    private void getTargets() {
+    private void updateTargets() {
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (!(entity instanceof LivingEntity living)) continue;
             if (living == mc.player) continue;

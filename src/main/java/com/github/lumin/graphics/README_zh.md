@@ -125,4 +125,4 @@ draw(); // 内容会一直保存在 GPU 缓冲区中，直到调用 .clear()
 
 ---
 
-Copyright © 2026 slmpc.
+Copyright © 2026 KonekokoHouse.

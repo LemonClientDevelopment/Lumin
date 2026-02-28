@@ -33,7 +33,7 @@ public class Module {
 
     //private final BoolSetting hidden; // 控制是否在ModuleListHud中显示
 
-    protected Minecraft mc;
+    protected static final Minecraft mc = Minecraft.getInstance();
 
     public Module(String englishName, String chineseName, String englishDescription, String chineseDescription, Category category) {
         this.englishName = englishName;
@@ -42,7 +42,6 @@ public class Module {
         this.chineseDescription = chineseDescription;
         this.category = category;
         //addSetting(this.hidden = new BoolSetting("Hidden", "隐藏", false));
-        mc = Minecraft.getInstance();
     }
 
     protected boolean nullCheck() {
