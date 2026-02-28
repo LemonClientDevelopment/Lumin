@@ -32,7 +32,7 @@ public class MixinWindow {
 
     @ModifyArg(method = "setTitle", at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwSetWindowTitle(JLjava/lang/CharSequence;)V", remap = false), index = 1)
     private CharSequence setTitle(CharSequence title) {
-        return "Lumin | " + "Minecraft 1.21.11";
+        return "ルミン";
     }
 
 }
