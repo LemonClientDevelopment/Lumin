@@ -3,6 +3,7 @@ package com.github.lumin.managers.impl;
 import com.github.lumin.modules.Module;
 import com.github.lumin.modules.impl.client.*;
 import com.github.lumin.modules.impl.combat.AimAssist;
+import com.github.lumin.modules.impl.combat.AntiBot;
 import com.github.lumin.modules.impl.combat.AutoClicker;
 import com.github.lumin.modules.impl.combat.KillAura;
 import com.github.lumin.modules.impl.player.SafeWalk;
@@ -38,6 +39,7 @@ public class ModuleManager {
 
                 // Combat
                 AimAssist.INSTANCE,
+                AntiBot.INSTANCE,
                 AutoClicker.INSTANCE,
                 KillAura.INSTANCE,
 

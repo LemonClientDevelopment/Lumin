@@ -129,7 +129,7 @@ public class KillAura extends Module {
             if (!(entity instanceof LivingEntity living)) continue;
             if (living == mc.player) continue;
             if (!living.isAlive() || living.isDeadOrDying()) continue;
-            //      if (AntiBot.isBot(entity)) continue;
+            if (AntiBot.INSTANCE.isBot(entity)) continue;
 
             double dist = RotationUtils.getEyeDistanceToEntity(living);
             if (dist > aimRange.getValue()) continue;
