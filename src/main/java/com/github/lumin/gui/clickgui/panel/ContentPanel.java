@@ -327,7 +327,10 @@ public class ContentPanel implements IComponent {
         if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) return false;
 
         if (MouseUtils.isHovering(lastSearchBoxX, lastSearchBoxY, lastSearchBoxW, lastSearchBoxH, event.x(), event.y())) {
-            if (event.button() == 1) { listSearchText = ""; listScrollTarget = 0.0f; }
+            if (event.button() == 1) {
+                listSearchText = "";
+                listScrollTarget = 0.0f;
+            }
             listSearchFocused = true;
             return true;
         }
@@ -383,7 +386,10 @@ public class ContentPanel implements IComponent {
 
     private boolean listViewKeyPressed(KeyEvent event) {
         if (!listSearchFocused) return false;
-        if (handleSearchKey(event, new StringBuilder(listSearchText), () -> { listSearchText = ""; listScrollTarget = 0.0f; })) {
+        if (handleSearchKey(event, new StringBuilder(listSearchText), () -> {
+            listSearchText = "";
+            listScrollTarget = 0.0f;
+        })) {
             if (event.key() == GLFW.GLFW_KEY_BACKSPACE && !listSearchText.isEmpty()) {
                 listSearchText = listSearchText.substring(0, listSearchText.length() - 1);
                 listScrollTarget = 0.0f;
@@ -534,7 +540,10 @@ public class ContentPanel implements IComponent {
         }
 
         if (MouseUtils.isHovering(lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, lastSettingsSearchBoxH, event.x(), event.y())) {
-            if (event.button() == 1) { settingsSearchText = ""; settingsScrollTarget = 0.0f; }
+            if (event.button() == 1) {
+                settingsSearchText = "";
+                settingsScrollTarget = 0.0f;
+            }
             settingsSearchFocused = true;
             return true;
         }
@@ -635,7 +644,7 @@ public class ContentPanel implements IComponent {
             float scale = 1.0f + 0.02f * ht;
             float rw = width * scale;
             float rh = height * scale;
-            round.addRoundRect(x - (rw - width) / 2.0f, y - (rh - height) / 2.0f, rw, rh, 10f * guiScale, new Color(r, g, b, (int)(a * alpha)));
+            round.addRoundRect(x - (rw - width) / 2.0f, y - (rh - height) / 2.0f, rw, rh, 10f * guiScale, new Color(r, g, b, (int) (a * alpha)));
 
             float nameScale = 1.1f * guiScale;
             float maxNameWidth = rw - 14 * guiScale;
@@ -686,7 +695,10 @@ public class ContentPanel implements IComponent {
             renderSettingsView(set, mouseX, mouseY, deltaTicks, alpha);
         } else if (currentState == 3) {
             viewAnimation.run(0.0f);
-            if (viewAnimation.getValue() <= 0.01f) { currentState = 0; clearSettingsModule(); }
+            if (viewAnimation.getValue() <= 0.01f) {
+                currentState = 0;
+                clearSettingsModule();
+            }
             renderListView(set, mouseX, mouseY, deltaTicks, alpha);
         } else if (currentState == 1) {
             renderSettingsView(set, mouseX, mouseY, deltaTicks, alpha);
@@ -696,7 +708,7 @@ public class ContentPanel implements IComponent {
     }
 
     private static Color applyAlpha(Color color, float alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)(color.getAlpha() * alpha));
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * alpha));
     }
 
     @Override

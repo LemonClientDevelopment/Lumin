@@ -6,9 +6,7 @@ import com.github.lumin.modules.impl.combat.AimAssist;
 import com.github.lumin.modules.impl.combat.AntiBot;
 import com.github.lumin.modules.impl.combat.AutoClicker;
 import com.github.lumin.modules.impl.combat.KillAura;
-import com.github.lumin.modules.impl.player.SafeWalk;
-import com.github.lumin.modules.impl.player.Scaffold;
-import com.github.lumin.modules.impl.player.Sprint;
+import com.github.lumin.modules.impl.player.*;
 import com.github.lumin.modules.impl.visual.Nametags;
 import com.github.lumin.modules.impl.visual.RenderTest;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -44,6 +42,8 @@ public class ModuleManager {
                 KillAura.INSTANCE,
 
                 // Player
+                BreakCooldown.INSTANCE,
+                JumpCooldown.INSTANCE,
                 SafeWalk.INSTANCE,
                 Scaffold.INSTANCE,
                 Sprint.INSTANCE,

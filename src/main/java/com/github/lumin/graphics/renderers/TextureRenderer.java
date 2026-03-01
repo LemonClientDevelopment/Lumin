@@ -16,6 +16,7 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.TextureTransform;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.ARGB;
@@ -157,18 +158,28 @@ public class TextureRenderer implements IRenderer {
     }
 
     private LuminTexture loadTexture(Identifier identifier, boolean useLinearFilter) {
-        Optional<Resource> resource = mc.getResourceManager().getResource(identifier);
-        if (resource.isEmpty()) {
-            throw new RuntimeException("Couldn't find resource at " + identifier);
+        NativeImage image = null;
+        try {
+            Optional<Resource> resource = mc.getResourceManager().getResource(identifier);
+            if (resource.isPresent()) {
+                try (InputStream is = resource.get().open()) {
+                    image = NativeImage.read(is);
+                }
+            }
+        } catch (Exception ignored) {
         }
 
-        try (InputStream is = resource.get().open(); NativeImage image = NativeImage.read(is)) {
+        if (image == null) {
+            image = MissingTextureAtlasSprite.generateMissingImage();
+        }
+
+        try (NativeImage finalImage = image) {
             GpuTexture texture = RenderSystem.getDevice().createTexture(
                     () -> "Lumin-Texture: " + identifier,
                     GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_COPY_DST,
                     TextureFormat.RGBA8,
-                    image.getWidth(),
-                    image.getHeight(),
+                    finalImage.getWidth(),
+                    finalImage.getHeight(),
                     1,
                     1
             );
@@ -184,7 +195,7 @@ public class TextureRenderer implements IRenderer {
                     OptionalDouble.empty()
             );
 
-            RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, image);
+            RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, finalImage);
             return new LuminTexture(texture, view, sampler);
         } catch (Exception e) {
             throw new RuntimeException("Failed to load texture " + identifier, e);
