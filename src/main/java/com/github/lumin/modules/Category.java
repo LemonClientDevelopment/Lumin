@@ -2,11 +2,11 @@ package com.github.lumin.modules;
 
 public enum Category {
 
-    COMBAT("\uF01D", "战斗", "ComBat"),
-    PLAYER("\uF002", "玩家", "Player"),
-    VISUAL("\uF019", "渲染", "Render"),
-    MISC("\uF008", "其他", "Others"),
-    CLIENT("\uF003", "客户端", "Client");
+    COMBAT("b", "战斗", "ComBat"),
+    PLAYER("5", "玩家", "Player"),
+    VISUAL("a", "渲染", "Render"),
+    MISC("H", "其他", "Others"),
+    CLIENT("_", "客户端", "Client");
 
     public final String icon;
     private final String cnName;

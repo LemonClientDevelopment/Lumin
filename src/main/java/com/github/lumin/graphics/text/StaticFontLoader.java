@@ -9,6 +9,6 @@ public class StaticFontLoader {
 
     public static final TtfFontLoader regular = new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/regular.ttf"));
 
-    public static final TtfFontLoader ICONS = new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/icons.ttf"));
+    public static final TtfFontLoader ICONS = new TtfFontLoader(ResourceLocationUtils.getIdentifier("fonts/icon.ttf"));
 
 }

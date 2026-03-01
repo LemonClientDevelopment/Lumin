@@ -1,7 +1,5 @@
 package com.github.lumin.settings;
 
-import com.github.lumin.modules.impl.client.InterFace;
-
 public class Setting<V> {
 
     protected final String chineseName;

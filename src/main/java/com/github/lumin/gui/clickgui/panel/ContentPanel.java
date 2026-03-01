@@ -137,25 +137,25 @@ public class ContentPanel implements IComponent {
         return m;
     }
 
-    private void renderSearchBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean focused, boolean hovered, String text, String placeholder) {
+    private void renderSearchBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean focused, boolean hovered, String text) {
         Color bgColor = focused ? new Color(50, 50, 50, 200) : (hovered ? new Color(40, 40, 40, 200) : new Color(30, 30, 30, 200));
         set.bottomRoundRect().addRoundRect(x, y, w, h, 8f * guiScale, bgColor);
-        String display = text.isEmpty() && !focused ? placeholder : text;
+        String display = text.isEmpty() && !focused ? "搜索..." : text;
         if (focused && (System.currentTimeMillis() % 1000 > 500)) display += "_";
         set.font().addText(display, x + 6 * guiScale, y + h / 2 - 7 * guiScale, guiScale * 0.9f, text.isEmpty() && !focused ? Color.GRAY : Color.WHITE);
     }
 
-    private void renderIconBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean hovered, String icon) {
+    private void renderIconBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean hovered) {
         set.bottomRoundRect().addRoundRect(x, y, w, h, 8f * guiScale, hovered ? new Color(40, 40, 40, 200) : new Color(30, 30, 30, 200));
         float iconScale = guiScale * 1.2f;
-        float iconW = set.font().getWidth(icon, iconScale, StaticFontLoader.ICONS);
+        float iconW = set.font().getWidth("<", iconScale, StaticFontLoader.ICONS);
         float iconH = set.font().getHeight(iconScale, StaticFontLoader.ICONS);
         float iconX = x + (w - iconW) / 2f;
         float iconY = y + (h - iconH) / 2f - guiScale;
-        set.font().addText(icon, iconX, iconY, iconScale, new Color(200, 200, 200), StaticFontLoader.ICONS);
+        set.font().addText("<", iconX, iconY - 1, iconScale, new Color(200, 200, 200), StaticFontLoader.ICONS);
     }
 
-    private void renderScrollbar(RendererSet set, float x, float y, float w, float h, float thumbY, float thumbH, float guiScale, boolean dragging, boolean hovered, boolean thumbHovered) {
+    private void renderScrollbar(RendererSet set, float x, float y, float w, float h, float thumbY, float thumbH, boolean dragging, boolean hovered, boolean thumbHovered) {
         Color trackColor = hovered ? new Color(255, 255, 255, 28) : new Color(255, 255, 255, 18);
         Color thumbColor = dragging ? new Color(255, 255, 255, 90) : (thumbHovered ? new Color(255, 255, 255, 75) : new Color(255, 255, 255, 55));
         set.bottomRoundRect().addRoundRect(x, y, w, h, w / 2.0f, trackColor);
@@ -182,53 +182,72 @@ public class ContentPanel implements IComponent {
         settingsFont.clearScissor();
     }
 
+    private float handleScrollDrag(float scrollTarget, float maxScroll, float thumbH, float scrollbarH, float mouseY, float dragStartMouseY, float dragStartScroll) {
+        float thumbTravel = Math.max(0.0f, scrollbarH - thumbH);
+        if (thumbTravel <= 0.0f) return scrollTarget;
+        float mouseDelta = mouseY - dragStartMouseY;
+        return Mth.clamp(dragStartScroll + (mouseDelta / thumbTravel) * maxScroll, 0.0f, maxScroll);
+    }
+
+    private float handleScrollClick(float scrollTarget, float maxScroll, float thumbH, float thumbY, float scrollbarX, float scrollbarY, float scrollbarW, float scrollbarH, float mouseX, float mouseY) {
+        float thumbTravel = Math.max(0.0f, scrollbarH - thumbH);
+        if (thumbTravel <= 0.0f) return scrollTarget;
+        if (MouseUtils.isHovering(scrollbarX, thumbY, scrollbarW, thumbH, mouseX, mouseY)) return scrollTarget;
+        float ratio = Mth.clamp((mouseY - scrollbarY - thumbH / 2.0f) / thumbTravel, 0.0f, 1.0f);
+        return ratio * maxScroll;
+    }
+
+    private float handleMouseScroll(float scrollTarget, float maxScroll, float areaX, float areaY, float areaW, float areaH, float scrollbarW, double mouseX, double mouseY, double scrollY) {
+        if (maxScroll <= 0.0f) return scrollTarget;
+        if (!MouseUtils.isHovering(areaX, areaY, areaW + scrollbarW, areaH, mouseX, mouseY)) return scrollTarget;
+        float step = 24.0f * InterFace.INSTANCE.scale.getValue().floatValue();
+        return Mth.clamp(scrollTarget - (float) scrollY * step, 0.0f, maxScroll);
+    }
+
+    private boolean handleSearchKey(KeyEvent event, StringBuilder searchText, Runnable onClear) {
+        if (event.key() == GLFW.GLFW_KEY_BACKSPACE) {
+            if (!searchText.isEmpty()) {
+                searchText.deleteCharAt(searchText.length() - 1);
+                onClear.run();
+            }
+            return true;
+        }
+        if (event.key() == GLFW.GLFW_KEY_ESCAPE || event.key() == GLFW.GLFW_KEY_ENTER) {
+            return true;
+        }
+        return false;
+    }
+
     private void renderListView(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float panelWidth = this.width * guiScale;
-        float panelHeight = this.height * guiScale;
         float padding = 8 * guiScale;
         float spacing = 4 * guiScale;
         float searchHeight = 24 * guiScale;
-        float availableWidth = panelWidth - padding * 2 - spacing;
-        float iconBoxWidth = availableWidth * 0.1f;
-        float searchBoxWidth = availableWidth * 0.9f;
+        float iconBoxWidth = (this.width * guiScale - padding * 2 - spacing) * 0.1f;
+        float searchBoxWidth = (this.width * guiScale - padding * 2 - spacing) * 0.9f;
 
-        float iconBoxX = this.x + padding;
-        float searchBoxX = iconBoxX + iconBoxWidth + spacing;
-        float boxY = this.y + padding;
+        lastIconBoxX = this.x + padding;
+        lastIconBoxY = this.y + padding;
+        lastIconBoxW = iconBoxWidth;
+        lastIconBoxH = searchHeight;
 
-        boolean iconBoxHovered = MouseUtils.isHovering(iconBoxX, boxY, iconBoxWidth, searchHeight, mouseX, mouseY);
-        renderIconBox(set, iconBoxX, boxY, iconBoxWidth, searchHeight, guiScale, iconBoxHovered, "\uF00D");
+        renderIconBox(set, lastIconBoxX, lastIconBoxY, iconBoxWidth, searchHeight, guiScale, MouseUtils.isHovering(lastIconBoxX, lastIconBoxY, iconBoxWidth, searchHeight, mouseX, mouseY));
 
-        boolean searchHovered = MouseUtils.isHovering(searchBoxX, boxY, searchBoxWidth, searchHeight, mouseX, mouseY);
-        String placeholder = "搜索...";
-        renderSearchBox(set, searchBoxX, boxY, searchBoxWidth, searchHeight, guiScale, listSearchFocused, searchHovered, listSearchText, placeholder);
-
-        lastSearchBoxX = searchBoxX;
-        lastSearchBoxY = boxY;
+        lastSearchBoxX = lastIconBoxX + iconBoxWidth + spacing;
+        lastSearchBoxY = lastIconBoxY;
         lastSearchBoxW = searchBoxWidth;
         lastSearchBoxH = searchHeight;
+        renderSearchBox(set, lastSearchBoxX, lastSearchBoxY, searchBoxWidth, searchHeight, guiScale, listSearchFocused, MouseUtils.isHovering(lastSearchBoxX, lastSearchBoxY, searchBoxWidth, searchHeight, mouseX, mouseY), listSearchText);
 
-        float listStartY = boxY + searchHeight + padding;
-        float listBottom = this.y + panelHeight - padding;
-        float listH = Math.max(0.0f, listBottom - listStartY);
+        lastListX = this.x + padding;
+        lastListY = lastIconBoxY + searchHeight + padding;
+        lastListW = Math.max(0.0f, this.width * guiScale - padding * 2 - 4.0f * guiScale - 4.0f * guiScale);
+        lastListH = Math.max(0.0f, this.y + this.height * guiScale - padding - lastListY);
 
-        float scrollbarW = 4.0f * guiScale;
-        float scrollbarGap = 4.0f * guiScale;
-        float listAreaX = this.x + padding;
-        float listAreaW = Math.max(0.0f, panelWidth - padding * 2 - scrollbarGap - scrollbarW);
-
-        lastListX = listAreaX;
-        lastListY = listStartY;
-        lastListW = listAreaW;
-        lastListH = listH;
-
-        float scrollbarX = listAreaX + listAreaW + scrollbarGap;
-
-        lastScrollbarX = scrollbarX;
-        lastScrollbarY = listStartY;
-        lastScrollbarW = scrollbarW;
-        lastScrollbarH = listH;
+        lastScrollbarX = lastListX + lastListW + 4.0f * guiScale;
+        lastScrollbarY = lastListY;
+        lastScrollbarW = 4.0f * guiScale;
+        lastScrollbarH = lastListH;
 
         List<ModuleCard> visibleCards = new ArrayList<>();
         for (ModuleCard card : moduleCards) {
@@ -240,81 +259,53 @@ public class ContentPanel implements IComponent {
             visibleCards.add(card);
         }
 
-        if (visibleCards.isEmpty() || listH <= 0.0f || listAreaW <= 0.0f) {
-            listMaxScroll = 0.0f;
-            listScrollOffset = 0.0f;
-            listScrollTarget = 0.0f;
+        if (visibleCards.isEmpty() || lastListH <= 0.0f || lastListW <= 0.0f) {
+            listMaxScroll = listScrollOffset = listScrollTarget = 0.0f;
             listDraggingScrollbar = false;
-            lastThumbY = 0.0f;
-            lastThumbH = 0.0f;
+            lastThumbY = lastThumbH = 0.0f;
             return;
         }
 
         float itemGap = 8 * guiScale;
-        float minCardWidth = 120 * guiScale;
-        int columns = Math.max(3, Mth.floor((listAreaW + itemGap) / (minCardWidth + itemGap)));
-
-        float cardWidth = (listAreaW - itemGap * (columns - 1)) / columns;
+        int columns = Math.max(3, Mth.floor((lastListW + itemGap) / (120 * guiScale + itemGap)));
+        float cardWidth = (lastListW - itemGap * (columns - 1)) / columns;
         float cardHeight = cardWidth * (CARD_ASPECT_HEIGHT / CARD_ASPECT_WIDTH);
-
         int totalRows = Mth.ceil(visibleCards.size() / (double) columns);
-        float contentH = totalRows <= 0 ? 0.0f : totalRows * cardHeight + Math.max(0, totalRows - 1) * itemGap;
+        float contentH = totalRows * cardHeight + Math.max(0, totalRows - 1) * itemGap;
 
-        listMaxScroll = Math.max(0.0f, contentH - listH);
+        listMaxScroll = Math.max(0.0f, contentH - lastListH);
         listScrollTarget = Mth.clamp(listScrollTarget, 0.0f, listMaxScroll);
-        listScrollOffset = listScrollOffset + (listScrollTarget - listScrollOffset) * 0.35f;
-        listScrollOffset = Math.max(0.0f, Math.min(listScrollOffset, listMaxScroll));
+        listScrollOffset += (listScrollTarget - listScrollOffset) * 0.35f;
+        listScrollOffset = Mth.clamp(listScrollOffset, 0.0f, listMaxScroll);
 
-        float thumbH = listMaxScroll <= 0.0f ? listH : Math.max(12.0f * guiScale, listH * (listH / contentH));
-        float thumbTravel = Math.max(0.0f, listH - thumbH);
-        float thumbY = listMaxScroll <= 0.0f ? listStartY : listStartY + (listScrollOffset / listMaxScroll) * thumbTravel;
+        lastThumbH = listMaxScroll <= 0.0f ? lastListH : Math.max(12.0f * guiScale, lastListH * (lastListH / contentH));
+        float thumbTravel = Math.max(0.0f, lastListH - lastThumbH);
+        lastThumbY = listMaxScroll <= 0.0f ? lastListY : lastListY + (listScrollOffset / listMaxScroll) * thumbTravel;
 
-        lastThumbY = thumbY;
-        lastThumbH = thumbH;
-
-        if (listDraggingScrollbar && listMaxScroll > 0.0f && thumbTravel > 0.0f) {
-            float mouseDelta = mouseY - listScrollbarDragStartMouseY;
-            float scrollDelta = (mouseDelta / thumbTravel) * listMaxScroll;
-            listScrollTarget = Math.max(0.0f, Math.min(listScrollbarDragStartScroll + scrollDelta, listMaxScroll));
+        if (listDraggingScrollbar && listMaxScroll > 0.0f) {
+            listScrollTarget = handleScrollDrag(listScrollTarget, listMaxScroll, lastThumbH, lastScrollbarH, mouseY, listScrollbarDragStartMouseY, listScrollbarDragStartScroll);
         }
 
         float pxScale = (float) mc.getWindow().getGuiScale();
-        int fbW = mc.getWindow().getWidth();
-        int fbH = mc.getWindow().getHeight();
-        int guiH = mc.getWindow().getGuiScaledHeight();
-
-        int scX = Mth.floor(listAreaX * pxScale);
-        int scY = Mth.floor((guiH - (listStartY + listH)) * pxScale);
-        int scW = Mth.ceil(listAreaW * pxScale);
-        int scH = Mth.ceil(listH * pxScale);
-
-        scX = Mth.clamp(scX, 0, fbW);
-        scY = Mth.clamp(scY, 0, fbH);
-        scW = Mth.clamp(scW, 0, fbW - scX);
-        scH = Mth.clamp(scH, 0, fbH - scY);
-
+        int scX = Mth.clamp(Mth.floor(lastListX * pxScale), 0, mc.getWindow().getWidth());
+        int scY = Mth.clamp(Mth.floor((mc.getWindow().getGuiScaledHeight() - (lastListY + lastListH)) * pxScale), 0, mc.getWindow().getHeight());
+        int scW = Mth.clamp(Mth.ceil(lastListW * pxScale), 0, mc.getWindow().getWidth() - scX);
+        int scH = Mth.clamp(Mth.ceil(lastListH * pxScale), 0, mc.getWindow().getHeight() - scY);
         listRoundRect.setScissor(scX, scY, scW, scH);
         listFont.setScissor(scX, scY, scW, scH);
 
+        float listBottom = this.y + this.height * guiScale - padding;
         int visibleIndex = 0;
         for (ModuleCard card : visibleCards) {
             int row = visibleIndex / columns;
             int col = visibleIndex % columns;
-
-            float cardX = listAreaX + col * (cardWidth + itemGap);
-            float cardY = listStartY + row * (cardHeight + itemGap) - listScrollOffset;
-
-            card.x = cardX;
-            card.y = cardY;
+            card.x = lastListX + col * (cardWidth + itemGap);
+            card.y = lastListY + row * (cardHeight + itemGap) - listScrollOffset;
             card.width = cardWidth;
             card.height = cardHeight;
-
-            if (cardY + cardHeight < listStartY || cardY > listBottom) {
-                visibleIndex++;
-                continue;
+            if (card.y + cardHeight >= lastListY && card.y <= listBottom) {
+                card.render(listRoundRect, listFont, mouseX, mouseY, guiScale);
             }
-
-            card.render(listRoundRect, listFont, mouseX, mouseY, guiScale);
             visibleIndex++;
         }
 
@@ -324,9 +315,7 @@ public class ContentPanel implements IComponent {
         listFont.clearScissor();
 
         if (listMaxScroll > 0.0f) {
-            boolean scrollbarHovered = MouseUtils.isHovering(scrollbarX, listStartY, scrollbarW, listH, mouseX, mouseY);
-            boolean thumbHovered = MouseUtils.isHovering(scrollbarX, thumbY, scrollbarW, thumbH, mouseX, mouseY);
-            renderScrollbar(set, scrollbarX, listStartY, scrollbarW, listH, thumbY, thumbH, guiScale, listDraggingScrollbar, scrollbarHovered, thumbHovered);
+            renderScrollbar(set, lastScrollbarX, lastListY, lastScrollbarW, lastListH, lastThumbY, lastThumbH, listDraggingScrollbar, MouseUtils.isHovering(lastScrollbarX, lastListY, lastScrollbarW, lastListH, mouseX, mouseY), MouseUtils.isHovering(lastScrollbarX, lastThumbY, lastScrollbarW, lastThumbH, mouseX, mouseY));
         }
     }
 
@@ -335,15 +324,10 @@ public class ContentPanel implements IComponent {
         float panelWidth = this.width * guiScale;
         float panelHeight = this.height * guiScale;
 
-        if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
-            return false;
-        }
+        if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) return false;
 
         if (MouseUtils.isHovering(lastSearchBoxX, lastSearchBoxY, lastSearchBoxW, lastSearchBoxH, event.x(), event.y())) {
-            if (event.button() == 1) {
-                listSearchText = "";
-                listScrollTarget = 0.0f;
-            }
+            if (event.button() == 1) { listSearchText = ""; listScrollTarget = 0.0f; }
             listSearchFocused = true;
             return true;
         }
@@ -351,39 +335,31 @@ public class ContentPanel implements IComponent {
         listSearchFocused = false;
 
         if (event.button() == 0 && listMaxScroll > 0.0f && MouseUtils.isHovering(lastScrollbarX, lastScrollbarY, lastScrollbarW, lastScrollbarH, event.x(), event.y())) {
-            float thumbTravel = Math.max(0.0f, lastScrollbarH - lastThumbH);
-            if (thumbTravel > 0.0f) {
-                if (MouseUtils.isHovering(lastScrollbarX, lastThumbY, lastScrollbarW, lastThumbH, event.x(), event.y())) {
-                    listDraggingScrollbar = true;
-                    listScrollbarDragStartMouseY = (float) event.y();
-                    listScrollbarDragStartScroll = listScrollTarget;
-                    return true;
-                }
-                float clickY = (float) event.y();
-                float ratio = (clickY - lastScrollbarY - lastThumbH / 2.0f) / thumbTravel;
-                ratio = Math.max(0.0f, Math.min(1.0f, ratio));
-                listScrollTarget = ratio * listMaxScroll;
+            if (MouseUtils.isHovering(lastScrollbarX, lastThumbY, lastScrollbarW, lastThumbH, event.x(), event.y())) {
                 listDraggingScrollbar = true;
                 listScrollbarDragStartMouseY = (float) event.y();
                 listScrollbarDragStartScroll = listScrollTarget;
                 return true;
             }
+            listScrollTarget = handleScrollClick(listScrollTarget, listMaxScroll, lastThumbH, lastThumbY, lastScrollbarX, lastScrollbarY, lastScrollbarW, lastScrollbarH, (float) event.x(), (float) event.y());
+            listDraggingScrollbar = true;
+            listScrollbarDragStartMouseY = (float) event.y();
+            listScrollbarDragStartScroll = listScrollTarget;
+            return true;
         }
 
-        if (event.button() == 0 && !moduleCards.isEmpty()) {
+        if (event.button() == 0) {
             for (ModuleCard card : moduleCards) {
-                if (card.width <= 0 || card.height <= 0) continue;
-                if (MouseUtils.isHovering(card.x, card.y, card.width, card.height, event.x(), event.y())) {
+                if (card.width > 0 && card.height > 0 && MouseUtils.isHovering(card.x, card.y, card.width, card.height, event.x(), event.y())) {
                     card.module.toggle();
                     return true;
                 }
             }
         }
 
-        if (event.button() == 1 && !moduleCards.isEmpty()) {
+        if (event.button() == 1) {
             for (ModuleCard card : moduleCards) {
-                if (card.width <= 0 || card.height <= 0) continue;
-                if (MouseUtils.isHovering(card.x, card.y, card.width, card.height, event.x(), event.y())) {
+                if (card.width > 0 && card.height > 0 && MouseUtils.isHovering(card.x, card.y, card.width, card.height, event.x(), event.y())) {
                     requestedSettingsModule = card.module;
                     listDraggingScrollbar = false;
                     return true;
@@ -397,42 +373,30 @@ public class ContentPanel implements IComponent {
     private boolean listViewMouseReleased(MouseButtonEvent event) {
         listDraggingScrollbar = false;
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float panelWidth = this.width * guiScale;
-        float panelHeight = this.height * guiScale;
-        return MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y());
+        return MouseUtils.isHovering(x, y, this.width * guiScale, this.height * guiScale, event.x(), event.y());
     }
 
     private boolean listViewMouseScrolled(double mouseX, double mouseY, double scrollY) {
-        if (listMaxScroll <= 0.0f) return false;
-        if (!MouseUtils.isHovering(lastListX, lastListY, lastListW + lastScrollbarW, lastListH, mouseX, mouseY))
-            return false;
-        float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float step = 24.0f * guiScale;
-        listScrollTarget = Math.max(0.0f, Math.min(listScrollTarget - (float) scrollY * step, listMaxScroll));
-        return true;
+        listScrollTarget = handleMouseScroll(listScrollTarget, listMaxScroll, lastListX, lastListY, lastListW, lastListH, lastScrollbarW, mouseX, mouseY, scrollY);
+        return listMaxScroll > 0.0f && MouseUtils.isHovering(lastListX, lastListY, lastListW + lastScrollbarW, lastListH, mouseX, mouseY);
     }
 
     private boolean listViewKeyPressed(KeyEvent event) {
-        if (listSearchFocused) {
-            if (event.key() == GLFW.GLFW_KEY_BACKSPACE) {
-                if (!listSearchText.isEmpty()) {
-                    listSearchText = listSearchText.substring(0, listSearchText.length() - 1);
-                    listScrollTarget = 0.0f;
-                }
-                return true;
+        if (!listSearchFocused) return false;
+        if (handleSearchKey(event, new StringBuilder(listSearchText), () -> { listSearchText = ""; listScrollTarget = 0.0f; })) {
+            if (event.key() == GLFW.GLFW_KEY_BACKSPACE && !listSearchText.isEmpty()) {
+                listSearchText = listSearchText.substring(0, listSearchText.length() - 1);
+                listScrollTarget = 0.0f;
             }
-            if (event.key() == GLFW.GLFW_KEY_ESCAPE || event.key() == GLFW.GLFW_KEY_ENTER) {
-                listSearchFocused = false;
-                return true;
-            }
+            if (event.key() == GLFW.GLFW_KEY_ESCAPE || event.key() == GLFW.GLFW_KEY_ENTER) listSearchFocused = false;
+            return true;
         }
         return false;
     }
 
     private boolean listViewCharTyped(CharacterEvent event) {
         if (!listSearchFocused) return false;
-        String str = Character.toString(event.codepoint());
-        listSearchText += str;
+        listSearchText += Character.toString(event.codepoint());
         listScrollTarget = 0.0f;
         return true;
     }
@@ -480,101 +444,57 @@ public class ContentPanel implements IComponent {
         if (settingsComponent == null) return;
 
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float panelWidth = this.width * guiScale;
-        float panelHeight = this.height * guiScale;
         float padding = 8 * guiScale;
         float spacing = 4 * guiScale;
         float searchHeight = 24 * guiScale;
-        float availableWidth = panelWidth - padding * 2 - spacing;
-        float iconBoxWidth = availableWidth * 0.1f;
-        float titleBoxWidth = availableWidth * 0.9f;
+        float availableWidth = this.width * guiScale - padding * 2 - spacing;
 
-        float iconBoxX = this.x + padding;
-        float titleBoxX = iconBoxX + iconBoxWidth + spacing;
-        float boxY = this.y + padding;
-
-        boolean iconBoxHovered = MouseUtils.isHovering(iconBoxX, boxY, iconBoxWidth, searchHeight, mouseX, mouseY);
-        renderIconBox(set, iconBoxX, boxY, iconBoxWidth, searchHeight, guiScale, iconBoxHovered, "\uF00D");
-
-        lastIconBoxX = iconBoxX;
-        lastIconBoxY = boxY;
-        lastIconBoxW = iconBoxWidth;
+        lastIconBoxX = this.x + padding;
+        lastIconBoxY = this.y + padding;
+        lastIconBoxW = availableWidth * 0.1f;
         lastIconBoxH = searchHeight;
+        renderIconBox(set, lastIconBoxX, lastIconBoxY, lastIconBoxW, searchHeight, guiScale, MouseUtils.isHovering(lastIconBoxX, lastIconBoxY, lastIconBoxW, searchHeight, mouseX, mouseY));
 
-        boolean titleHovered = MouseUtils.isHovering(titleBoxX, boxY, titleBoxWidth, searchHeight, mouseX, mouseY);
-        renderSearchBox(set, titleBoxX, boxY, titleBoxWidth, searchHeight, guiScale, settingsSearchFocused, titleHovered, settingsSearchText, "搜索...");
-
-        lastSettingsSearchBoxX = titleBoxX;
-        lastSettingsSearchBoxY = boxY;
-        lastSettingsSearchBoxW = titleBoxWidth;
+        lastSettingsSearchBoxX = lastIconBoxX + lastIconBoxW + spacing;
+        lastSettingsSearchBoxY = lastIconBoxY;
+        lastSettingsSearchBoxW = availableWidth * 0.9f;
         lastSettingsSearchBoxH = searchHeight;
+        renderSearchBox(set, lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, searchHeight, guiScale, settingsSearchFocused, MouseUtils.isHovering(lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, searchHeight, mouseX, mouseY), settingsSearchText);
 
-        float areaX = this.x + padding;
-        float areaY = boxY + searchHeight + padding;
-        float areaW = Math.max(0.0f, panelWidth - padding * 2);
-        float areaH = Math.max(0.0f, (this.y + panelHeight - padding) - areaY);
+        lastSettingsX = this.x + padding;
+        lastSettingsY = lastIconBoxY + searchHeight + padding;
+        lastSettingsW = Math.max(0.0f, this.width * guiScale - padding * 2 - 4.0f * guiScale - 4.0f * guiScale);
+        lastSettingsH = Math.max(0.0f, (this.y + this.height * guiScale - padding) - lastSettingsY);
 
-        float scrollbarW = 4.0f * guiScale;
-        float scrollbarGap = 4.0f * guiScale;
-        float contentW = Math.max(0.0f, areaW - scrollbarGap - scrollbarW);
-
-        float titleScale = 1.15f * guiScale;
-        float rowH = 18.0f * guiScale;
-        float rowGap = 4.0f * guiScale;
-        float innerPadding = 8.0f * guiScale;
+        lastSettingsScrollbarX = lastSettingsX + lastSettingsW + 4.0f * guiScale;
+        lastSettingsScrollbarY = lastSettingsY;
+        lastSettingsScrollbarW = 4.0f * guiScale;
+        lastSettingsScrollbarH = lastSettingsH;
 
         settingsComponent.setFilterText(settingsSearchText);
         int itemCount = settingsComponent.getFilteredVisibleCount();
+        float titleH = set.font().getHeight(1.15f * guiScale);
+        float contentH = 8.0f * guiScale + titleH + 6.0f * guiScale + (itemCount > 0 ? itemCount * 18.0f * guiScale + Math.max(0, itemCount - 1) * 4.0f * guiScale : 0) + 8.0f * guiScale;
 
-        float titleH = set.font().getHeight(titleScale);
-        float contentH = innerPadding + titleH + 6.0f * guiScale;
-        if (itemCount > 0) {
-            contentH += itemCount * rowH + Math.max(0, itemCount - 1) * rowGap;
-        }
-        contentH += innerPadding;
+        settingsMaxScroll = Math.max(0.0f, contentH - lastSettingsH);
+        settingsScrollTarget = Mth.clamp(settingsScrollTarget, 0.0f, settingsMaxScroll);
+        settingsScrollOffset += (settingsScrollTarget - settingsScrollOffset) * 0.35f;
+        settingsScrollOffset = Mth.clamp(settingsScrollOffset, 0.0f, settingsMaxScroll);
 
-        settingsMaxScroll = Math.max(0.0f, contentH - areaH);
-        settingsScrollTarget = Math.max(0.0f, Math.min(settingsScrollTarget, settingsMaxScroll));
-        settingsScrollOffset = settingsScrollOffset + (settingsScrollTarget - settingsScrollOffset) * 0.35f;
-        settingsScrollOffset = Math.max(0.0f, Math.min(settingsScrollOffset, settingsMaxScroll));
+        lastSettingsThumbH = settingsMaxScroll <= 0.0f ? lastSettingsH : Math.max(12.0f * guiScale, lastSettingsH * (lastSettingsH / contentH));
+        float thumbTravel = Math.max(0.0f, lastSettingsH - lastSettingsThumbH);
+        lastSettingsThumbY = settingsMaxScroll <= 0.0f ? lastSettingsY : lastSettingsY + (settingsScrollOffset / settingsMaxScroll) * thumbTravel;
 
-        float scrollbarX = areaX + contentW + scrollbarGap;
-
-        float thumbH = settingsMaxScroll <= 0.0f ? areaH : Math.max(12.0f * guiScale, areaH * (areaH / contentH));
-        float thumbTravel = Math.max(0.0f, areaH - thumbH);
-        float thumbY = settingsMaxScroll <= 0.0f ? areaY : areaY + (settingsScrollOffset / settingsMaxScroll) * thumbTravel;
-
-        lastSettingsX = areaX;
-        lastSettingsY = areaY;
-        lastSettingsW = contentW;
-        lastSettingsH = areaH;
-
-        lastSettingsScrollbarX = scrollbarX;
-        lastSettingsScrollbarY = areaY;
-        lastSettingsScrollbarW = scrollbarW;
-        lastSettingsScrollbarH = areaH;
-
-        lastSettingsThumbY = thumbY;
-        lastSettingsThumbH = thumbH;
-
-        if (settingsDraggingScrollbar && settingsMaxScroll > 0.0f && thumbTravel > 0.0f) {
-            float mouseDelta = mouseY - settingsScrollbarDragStartMouseY;
-            float scrollDelta = (mouseDelta / thumbTravel) * settingsMaxScroll;
-            settingsScrollTarget = Math.max(0.0f, Math.min(settingsScrollbarDragStartScroll + scrollDelta, settingsMaxScroll));
+        if (settingsDraggingScrollbar && settingsMaxScroll > 0.0f) {
+            settingsScrollTarget = handleScrollDrag(settingsScrollTarget, settingsMaxScroll, lastSettingsThumbH, lastSettingsScrollbarH, mouseY, settingsScrollbarDragStartMouseY, settingsScrollbarDragStartScroll);
         }
 
-        float pxScale = (float) mc.getWindow().getGuiScale();
-        int fbW = mc.getWindow().getWidth();
-        int fbH = mc.getWindow().getHeight();
-        int guiH = mc.getWindow().getGuiScaledHeight();
-
-        setupScissor(areaX, areaY, contentW, areaH, pxScale, fbW, fbH, guiH);
+        setupScissor(lastSettingsX, lastSettingsY, lastSettingsW, lastSettingsH, (float) mc.getWindow().getGuiScale(), mc.getWindow().getWidth(), mc.getWindow().getHeight(), mc.getWindow().getGuiScaledHeight());
 
         RendererSet settingsSet = new RendererSet(settingsRoundRect, set.topRoundRect(), set.texture(), settingsFont, pickingRound, pickingRect, pickerRound, pickingText);
-
-        settingsComponent.setX(areaX);
-        settingsComponent.setY(areaY - settingsScrollOffset);
-        settingsComponent.setWidth(contentW);
+        settingsComponent.setX(lastSettingsX);
+        settingsComponent.setY(lastSettingsY - settingsScrollOffset);
+        settingsComponent.setWidth(lastSettingsW);
         settingsComponent.setHeight(contentH);
         settingsComponent.render(settingsSet, mouseX, mouseY, deltaTicks);
 
@@ -592,15 +512,12 @@ public class ContentPanel implements IComponent {
         pickingText.drawAndClear();
 
         if (settingsMaxScroll > 0.0f) {
-            boolean scrollbarHovered = MouseUtils.isHovering(scrollbarX, areaY, scrollbarW, areaH, mouseX, mouseY);
-            boolean thumbHovered = MouseUtils.isHovering(scrollbarX, thumbY, scrollbarW, thumbH, mouseX, mouseY);
-            renderScrollbar(set, scrollbarX, areaY, scrollbarW, areaH, thumbY, thumbH, guiScale, settingsDraggingScrollbar, scrollbarHovered, thumbHovered);
+            renderScrollbar(set, lastSettingsScrollbarX, lastSettingsY, lastSettingsScrollbarW, lastSettingsH, lastSettingsThumbY, lastSettingsThumbH, settingsDraggingScrollbar, MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsY, lastSettingsScrollbarW, lastSettingsH, mouseX, mouseY), MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsThumbY, lastSettingsScrollbarW, lastSettingsThumbH, mouseX, mouseY));
         }
     }
 
     private boolean settingsViewMouseClicked(MouseButtonEvent event, boolean focused) {
         if (settingsComponent == null) return false;
-
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float panelWidth = this.width * guiScale;
         float panelHeight = this.height * guiScale;
@@ -609,9 +526,7 @@ public class ContentPanel implements IComponent {
             return settingsComponent.mouseClicked(event, focused);
         }
 
-        if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
-            return false;
-        }
+        if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) return false;
 
         if (event.button() == 0 && MouseUtils.isHovering(lastIconBoxX, lastIconBoxY, lastIconBoxW, lastIconBoxH, event.x(), event.y())) {
             settingsExitRequested = true;
@@ -619,10 +534,7 @@ public class ContentPanel implements IComponent {
         }
 
         if (MouseUtils.isHovering(lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, lastSettingsSearchBoxH, event.x(), event.y())) {
-            if (event.button() == 1) {
-                settingsSearchText = "";
-                settingsScrollTarget = 0.0f;
-            }
+            if (event.button() == 1) { settingsSearchText = ""; settingsScrollTarget = 0.0f; }
             settingsSearchFocused = true;
             return true;
         }
@@ -630,23 +542,17 @@ public class ContentPanel implements IComponent {
         settingsSearchFocused = false;
 
         if (event.button() == 0 && settingsMaxScroll > 0.0f && MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsScrollbarY, lastSettingsScrollbarW, lastSettingsScrollbarH, event.x(), event.y())) {
-            float thumbTravel = Math.max(0.0f, lastSettingsScrollbarH - lastSettingsThumbH);
-            if (thumbTravel > 0.0f) {
-                if (MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsThumbY, lastSettingsScrollbarW, lastSettingsThumbH, event.x(), event.y())) {
-                    settingsDraggingScrollbar = true;
-                    settingsScrollbarDragStartMouseY = (float) event.y();
-                    settingsScrollbarDragStartScroll = settingsScrollTarget;
-                    return true;
-                }
-                float clickY = (float) event.y();
-                float ratio = (clickY - lastSettingsScrollbarY - lastSettingsThumbH / 2.0f) / thumbTravel;
-                ratio = Mth.clamp(ratio, 0.0f, 1.0f);
-                settingsScrollTarget = ratio * settingsMaxScroll;
+            if (MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsThumbY, lastSettingsScrollbarW, lastSettingsThumbH, event.x(), event.y())) {
                 settingsDraggingScrollbar = true;
                 settingsScrollbarDragStartMouseY = (float) event.y();
                 settingsScrollbarDragStartScroll = settingsScrollTarget;
                 return true;
             }
+            settingsScrollTarget = handleScrollClick(settingsScrollTarget, settingsMaxScroll, lastSettingsThumbH, lastSettingsThumbY, lastSettingsScrollbarX, lastSettingsScrollbarY, lastSettingsScrollbarW, lastSettingsScrollbarH, (float) event.x(), (float) event.y());
+            settingsDraggingScrollbar = true;
+            settingsScrollbarDragStartMouseY = (float) event.y();
+            settingsScrollbarDragStartScroll = settingsScrollTarget;
+            return true;
         }
 
         return settingsComponent.mouseClicked(event, focused);
@@ -655,37 +561,25 @@ public class ContentPanel implements IComponent {
     private boolean settingsViewMouseReleased(MouseButtonEvent event) {
         settingsDraggingScrollbar = false;
         if (settingsComponent == null) return false;
-        if (ColorSettingComponent.hasActivePicker()) {
-            return settingsComponent.mouseReleased(event);
-        }
-        if (settingsComponent.hasDraggingSetting()) {
+        if (ColorSettingComponent.hasActivePicker() || settingsComponent.hasDraggingSetting()) {
             return settingsComponent.mouseReleased(event);
         }
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float panelWidth = this.width * guiScale;
-        float panelHeight = this.height * guiScale;
-        return MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y()) && settingsComponent.mouseReleased(event);
+        return MouseUtils.isHovering(x, y, this.width * guiScale, this.height * guiScale, event.x(), event.y()) && settingsComponent.mouseReleased(event);
     }
 
     private boolean settingsViewMouseScrolled(double mouseX, double mouseY, double scrollY) {
-        if (settingsComponent == null) return false;
-        if (settingsMaxScroll <= 0.0f) return false;
-        if (!MouseUtils.isHovering(lastSettingsX, lastSettingsY, lastSettingsW + lastSettingsScrollbarW, lastSettingsH, mouseX, mouseY))
-            return false;
-        float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float step = 24.0f * guiScale;
-        settingsScrollTarget = Math.max(0.0f, Math.min(settingsScrollTarget - (float) scrollY * step, settingsMaxScroll));
-        return true;
+        if (settingsComponent == null || settingsMaxScroll <= 0.0f) return false;
+        settingsScrollTarget = handleMouseScroll(settingsScrollTarget, settingsMaxScroll, lastSettingsX, lastSettingsY, lastSettingsW, lastSettingsH, lastSettingsScrollbarW, mouseX, mouseY, scrollY);
+        return MouseUtils.isHovering(lastSettingsX, lastSettingsY, lastSettingsW + lastSettingsScrollbarW, lastSettingsH, mouseX, mouseY);
     }
 
     private boolean settingsViewKeyPressed(KeyEvent event) {
         if (settingsComponent == null) return false;
         if (settingsSearchFocused) {
-            if (event.key() == GLFW.GLFW_KEY_BACKSPACE) {
-                if (!settingsSearchText.isEmpty()) {
-                    settingsSearchText = settingsSearchText.substring(0, settingsSearchText.length() - 1);
-                    settingsScrollTarget = 0.0f;
-                }
+            if (event.key() == GLFW.GLFW_KEY_BACKSPACE && !settingsSearchText.isEmpty()) {
+                settingsSearchText = settingsSearchText.substring(0, settingsSearchText.length() - 1);
+                settingsScrollTarget = 0.0f;
                 return true;
             }
             if (event.key() == GLFW.GLFW_KEY_ESCAPE || event.key() == GLFW.GLFW_KEY_ENTER) {
@@ -699,8 +593,7 @@ public class ContentPanel implements IComponent {
     private boolean settingsViewCharTyped(CharacterEvent event) {
         if (settingsComponent == null) return false;
         if (settingsSearchFocused) {
-            String str = Character.toString(event.codepoint());
-            settingsSearchText += str;
+            settingsSearchText += Character.toString(event.codepoint());
             settingsScrollTarget = 0.0f;
             return true;
         }
@@ -727,77 +620,40 @@ public class ContentPanel implements IComponent {
             if (width <= 0 || height <= 0) return;
 
             boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
-
             hoverAnimation.run(hovered ? 1.0f : 0.0f);
             enabledAnimation.run(module.isEnabled() ? 1.0f : 0.0f);
-            float ht = clamp01(hoverAnimation.getValue());
-            float et = clamp01(enabledAnimation.getValue());
+            float ht = Mth.clamp(hoverAnimation.getValue(), 0.0f, 1.0f);
+            float et = Mth.clamp(enabledAnimation.getValue(), 0.0f, 1.0f);
 
             Color offColor = new Color(40, 40, 40, 130);
             Color onColor = new Color(148, 148, 148, 130);
-            Color base = lerpColor(offColor, onColor, et);
-            int alphaBump = (int) (24.0f * ht);
-            Color bgColor = new Color(base.getRed(), base.getGreen(), base.getBlue(), clamp255(base.getAlpha() + alphaBump));
+            int r = (int) (offColor.getRed() + (onColor.getRed() - offColor.getRed()) * et);
+            int g = (int) (offColor.getGreen() + (onColor.getGreen() - offColor.getGreen()) * et);
+            int b = (int) (offColor.getBlue() + (onColor.getBlue() - offColor.getBlue()) * et);
+            int a = Mth.clamp((int) (offColor.getAlpha() + (onColor.getAlpha() - offColor.getAlpha()) * et) + (int) (24.0f * ht), 0, 255);
 
             float scale = 1.0f + 0.02f * ht;
             float rw = width * scale;
             float rh = height * scale;
-            float rx = x - (rw - width) / 2.0f;
-            float ry = y - (rh - height) / 2.0f;
-
-            round.addRoundRect(rx, ry, rw, rh, 10f * guiScale, bgColor);
-
-            String moduleName = module.getName();
-            String moduleDescription = module.getDescription();
+            round.addRoundRect(x - (rw - width) / 2.0f, y - (rh - height) / 2.0f, rw, rh, 10f * guiScale, new Color(r, g, b, a));
 
             float nameScale = 1.1f * guiScale;
             float maxNameWidth = rw - 14 * guiScale;
-            float nameWidth = text.getWidth(moduleName, nameScale);
-            if (nameWidth > maxNameWidth && nameWidth > 0) {
-                nameScale *= maxNameWidth / nameWidth;
-                nameWidth = maxNameWidth;
-            }
+            float nameWidth = text.getWidth(module.getName(), nameScale);
+            if (nameWidth > maxNameWidth && nameWidth > 0) nameScale *= maxNameWidth / nameWidth;
 
-            float descriptionScale = 0.62f * guiScale;
-            float maxDescriptionWidth = rw - 16 * guiScale;
-            float descriptionWidth = text.getWidth(moduleDescription, descriptionScale);
-            if (descriptionWidth > maxDescriptionWidth && descriptionWidth > 0) {
-                descriptionScale *= maxDescriptionWidth / descriptionWidth;
-                descriptionWidth = maxDescriptionWidth;
-            }
+            float descScale = 0.62f * guiScale;
+            float maxDescWidth = rw - 16 * guiScale;
+            float descWidth = text.getWidth(module.getDescription(), descScale);
+            if (descWidth > maxDescWidth && descWidth > 0) descScale *= maxDescWidth / descWidth;
 
             float nameHeight = text.getHeight(nameScale);
-            float descriptionHeight = text.getHeight(descriptionScale);
-            float textGap = 3 * guiScale;
+            float descHeight = text.getHeight(descScale);
+            float blockHeight = nameHeight + 3 * guiScale + descHeight;
+            float startY = y - (rh - height) / 2.0f + (rh - blockHeight) / 2f;
 
-            float blockHeight = nameHeight + textGap + descriptionHeight;
-            float startY = ry + (rh - blockHeight) / 2f;
-
-            float nameX = rx + (rw - nameWidth) / 2f;
-            float nameY = startY - 0.6f * guiScale;
-
-            float descriptionX = rx + (rw - descriptionWidth) / 2f;
-            float descriptionY = startY + nameHeight + textGap - 0.2f * guiScale;
-
-            text.addText(moduleName, nameX, nameY, nameScale, Color.WHITE);
-            text.addText(moduleDescription, descriptionX, descriptionY, descriptionScale, new Color(200, 200, 200));
-        }
-
-        private static float clamp01(float v) {
-            return Mth.clamp(v, 0.0f, 1.0f);
-        }
-
-        private static int clamp255(int v) {
-            return Mth.clamp(v, 0, 255);
-        }
-
-        private static Color lerpColor(Color a, Color b, float t) {
-            t = clamp01(t);
-            int r = (int) (a.getRed() + (b.getRed() - a.getRed()) * t);
-            int g = (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * t);
-            int bl = (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * t);
-            int al = (int) (a.getAlpha() + (b.getAlpha() - a.getAlpha()) * t);
-            return new Color(clamp255(r), clamp255(g), clamp255(bl), clamp255(al));
+            text.addText(module.getName(), x - (rw - width) / 2.0f + (rw - (nameWidth > maxNameWidth ? maxNameWidth : nameWidth)) / 2f, startY - 0.6f * guiScale, nameScale, Color.WHITE);
+            text.addText(module.getDescription(), x - (rw - width) / 2.0f + (rw - (descWidth > maxDescWidth ? maxDescWidth : descWidth)) / 2f, startY + nameHeight + 3 * guiScale - 0.2f * guiScale, descScale, new Color(200, 200, 200));
         }
     }
 
@@ -805,47 +661,29 @@ public class ContentPanel implements IComponent {
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float radius = guiScale * 20f;
-        float panelWidth = this.width * guiScale;
-        float panelHeight = this.height * guiScale;
-//        set.topRoundRect().addRoundRect(x, y, panelWidth, panelHeight, 0, radius, radius, 0, new Color(0x5F000000, true));
+        BlurShader.drawRoundedBlur(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, new Color(0, 0, 0, 0), InterFace.INSTANCE.blurStrength.getValue().floatValue(), 15.0f);
 
-//        if (InterFace.INSTANCE.backgroundBlur.getValue() && InterFace.INSTANCE.blurMode.is("OnlyCategory")) {
-//            BlurShader.drawRoundedBlur(x, y, panelWidth, panelHeight, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue(),15.0f);
-//        }
-        BlurShader.drawRoundedBlur(x, y, panelWidth, panelHeight, 0, radius, radius, 0, new Color(0, 0, 0, 0), InterFace.INSTANCE.blurStrength.getValue().floatValue(), 15.0f);
+        targetState = (isSettingsActive() && !this.closeSettingsRequested) ? 1 : 0;
 
-        if (isSettingsActive() && !this.closeSettingsRequested) {
-            this.targetState = 1;
-        } else {
-            this.targetState = 0;
-        }
-
-        if (this.currentState != this.targetState) {
-            if (this.targetState == 1) {
-                this.currentState = 2;
-                this.viewAnimation.setStartValue(0.0f);
+        if (currentState != targetState) {
+            if (targetState == 1) {
+                currentState = 2;
+                viewAnimation.setStartValue(0.0f);
             } else {
-                this.currentState = 3;
-                this.viewAnimation.setStartValue(1.0f);
+                currentState = 3;
+                viewAnimation.setStartValue(1.0f);
             }
         }
 
-        if (this.currentState == 2) {
-            this.viewAnimation.run(1.0f);
-            float t = this.viewAnimation.getValue();
-            if (t >= 0.99f) {
-                this.currentState = 1;
-            }
+        if (currentState == 2) {
+            viewAnimation.run(1.0f);
+            if (viewAnimation.getValue() >= 0.99f) currentState = 1;
             renderSettingsView(set, mouseX, mouseY, deltaTicks);
-        } else if (this.currentState == 3) {
-            this.viewAnimation.run(0.0f);
-            float t = 1.0f - this.viewAnimation.getValue();
-            if (t <= 0.01f) {
-                this.currentState = 0;
-                clearSettingsModule();
-            }
+        } else if (currentState == 3) {
+            viewAnimation.run(0.0f);
+            if (viewAnimation.getValue() <= 0.01f) { currentState = 0; clearSettingsModule(); }
             renderListView(set, mouseX, mouseY, deltaTicks);
-        } else if (this.currentState == 1) {
+        } else if (currentState == 1) {
             renderSettingsView(set, mouseX, mouseY, deltaTicks);
         } else {
             renderListView(set, mouseX, mouseY, deltaTicks);
@@ -855,50 +693,39 @@ public class ContentPanel implements IComponent {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean focused) {
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
-        float panelWidth = this.width * guiScale;
-        float panelHeight = this.height * guiScale;
-
-        if (this.currentState == 2 || this.currentState == 3) {
-            return true;
-        }
+        if (currentState == 2 || currentState == 3) return true;
 
         if (ColorSettingComponent.hasActivePicker() && ColorSettingComponent.isMouseOutOfPicker((int) event.x(), (int) event.y())) {
             ColorSettingComponent.closeActivePicker();
             return true;
         }
 
-        if (ColorSettingComponent.hasActivePicker() && this.currentState == 1) {
+        if (ColorSettingComponent.hasActivePicker() && currentState == 1) {
             boolean handled = settingsViewMouseClicked(event, focused);
-            if (consumeSettingsExitRequest()) {
-                this.closeSettingsRequested = true;
-                return true;
-            }
+            if (consumeSettingsExitRequest()) closeSettingsRequested = true;
             return handled;
         }
 
-        if (!MouseUtils.isHovering(x, y, panelWidth, panelHeight, event.x(), event.y())) {
+        if (!MouseUtils.isHovering(x, y, this.width * guiScale, this.height * guiScale, event.x(), event.y())) {
             listViewClickOutside();
             settingsViewClickOutside();
             return false;
         }
 
-        if (this.currentState == 1) {
+        if (currentState == 1) {
             boolean handled = settingsViewMouseClicked(event, focused);
-            if (consumeSettingsExitRequest()) {
-                this.closeSettingsRequested = true;
-                return true;
-            }
+            if (consumeSettingsExitRequest()) closeSettingsRequested = true;
             return handled;
         }
 
-        if (this.currentState == 0) {
+        if (currentState == 0) {
             boolean handled = listViewMouseClicked(event, focused);
             Module open = consumeRequestedSettingsModule();
             if (open != null) {
-                this.closeSettingsRequested = false;
+                closeSettingsRequested = false;
                 setSettingsModule(open);
-                this.currentState = 2;
-                this.viewAnimation.setStartValue(0.0f);
+                currentState = 2;
+                viewAnimation.setStartValue(0.0f);
                 return true;
             }
             return handled;
@@ -909,73 +736,34 @@ public class ContentPanel implements IComponent {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (this.currentState == 2 || this.currentState == 3) {
-            return true;
-        }
-
-        if (ColorSettingComponent.hasActivePicker() && this.currentState == 1) {
-            return settingsViewMouseReleased(event);
-        }
-
-        if (this.currentState == 1) {
-            return settingsViewMouseReleased(event);
-        }
-
-        if (this.currentState == 0) {
-            return listViewMouseReleased(event);
-        }
-
+        if (currentState == 2 || currentState == 3) return true;
+        if (ColorSettingComponent.hasActivePicker() && currentState == 1) return settingsViewMouseReleased(event);
+        if (currentState == 1) return settingsViewMouseReleased(event);
+        if (currentState == 0) return listViewMouseReleased(event);
         return false;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (this.currentState == 2 || this.currentState == 3) {
-            return true;
-        }
-
-        if (this.currentState == 1) {
-            return settingsViewMouseScrolled(mouseX, mouseY, scrollY);
-        }
-
-        if (this.currentState == 0) {
-            return listViewMouseScrolled(mouseX, mouseY, scrollY);
-        }
-
+        if (currentState == 2 || currentState == 3) return true;
+        if (currentState == 1) return settingsViewMouseScrolled(mouseX, mouseY, scrollY);
+        if (currentState == 0) return listViewMouseScrolled(mouseX, mouseY, scrollY);
         return false;
     }
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (this.currentState == 2 || this.currentState == 3) {
-            return true;
-        }
-
-        if (this.currentState == 1) {
-            return settingsViewKeyPressed(event);
-        }
-
-        if (this.currentState == 0) {
-            return listViewKeyPressed(event);
-        }
-
+        if (currentState == 2 || currentState == 3) return true;
+        if (currentState == 1) return settingsViewKeyPressed(event);
+        if (currentState == 0) return listViewKeyPressed(event);
         return false;
     }
 
     @Override
     public boolean charTyped(CharacterEvent event) {
-        if (this.currentState == 2 || this.currentState == 3) {
-            return true;
-        }
-
-        if (this.currentState == 1) {
-            return settingsViewCharTyped(event);
-        }
-
-        if (this.currentState == 0) {
-            return listViewCharTyped(event);
-        }
-
+        if (currentState == 2 || currentState == 3) return true;
+        if (currentState == 1) return settingsViewCharTyped(event);
+        if (currentState == 0) return listViewCharTyped(event);
         return false;
     }
 }

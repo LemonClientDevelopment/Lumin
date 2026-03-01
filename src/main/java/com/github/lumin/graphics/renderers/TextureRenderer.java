@@ -44,13 +44,22 @@ public class TextureRenderer implements IRenderer {
     }
 
     public void addQuadTexture(Identifier texture, float x, float y, float width, float height, float u0, float v0, float u1, float v1, Color color) {
-        addRoundedTexture(texture, x, y, width, height, 0f, u0, v0, u1, v1, color);
+        addRoundedTexture(texture, x, y, width, height, 0f, u0, v0, u1, v1, color, false);
+    }
+
+    public void addQuadTexture(Identifier texture, float x, float y, float width, float height, float u0, float v0, float u1, float v1, Color color, boolean useLinearFilter) {
+        addRoundedTexture(texture, x, y, width, height, 0f, u0, v0, u1, v1, color, useLinearFilter);
     }
 
     public void addRoundedTexture(Identifier texture, float x, float y, float width, float height, float radius, float u0, float v0, float u1, float v1, Color color) {
+        addRoundedTexture(texture, x, y, width, height, radius, u0, v0, u1, v1, color, false);
+    }
+
+    public void addRoundedTexture(Identifier texture, float x, float y, float width, float height, float radius, float u0, float v0, float u1, float v1, Color color, boolean useLinearFilter) {
         Batch batch = batches.computeIfAbsent(texture, k -> new Batch(new LuminBuffer(bufferSize, GpuBuffer.USAGE_VERTEX)));
         batch.buffer.tryMap();
         batch.flushBufferFlag = true;
+        batch.useLinearFilter = useLinearFilter;
 
         if (batch.currentOffset + (long) STRIDE * 4L > bufferSize) {
             return;
@@ -121,7 +130,7 @@ public class TextureRenderer implements IRenderer {
             RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
             GpuBuffer ibo = autoIndices.getBuffer(indexCount);
 
-            LuminTexture texture = textureCache.computeIfAbsent(textureId, this::loadTexture);
+            LuminTexture texture = textureCache.computeIfAbsent(textureId, id -> loadTexture(id, batch.useLinearFilter));
 
             if (batch.flushBufferFlag) {
                 batch.buffer.unmap();
@@ -147,7 +156,7 @@ public class TextureRenderer implements IRenderer {
         }
     }
 
-    private LuminTexture loadTexture(Identifier identifier) {
+    private LuminTexture loadTexture(Identifier identifier, boolean useLinearFilter) {
         Optional<Resource> resource = mc.getResourceManager().getResource(identifier);
         if (resource.isEmpty()) {
             throw new RuntimeException("Couldn't find resource at " + identifier);
@@ -165,11 +174,12 @@ public class TextureRenderer implements IRenderer {
             );
 
             var view = RenderSystem.getDevice().createTextureView(texture);
+            FilterMode filterMode = useLinearFilter ? FilterMode.LINEAR : FilterMode.NEAREST;
             var sampler = RenderSystem.getDevice().createSampler(
                     AddressMode.CLAMP_TO_EDGE,
                     AddressMode.CLAMP_TO_EDGE,
-                    FilterMode.NEAREST,
-                    FilterMode.NEAREST,
+                    filterMode,
+                    filterMode,
                     1,
                     OptionalDouble.empty()
             );
@@ -208,6 +218,7 @@ public class TextureRenderer implements IRenderer {
         long currentOffset;
         int vertexCount;
         public boolean flushBufferFlag;
+        public boolean useLinearFilter;
 
         private Batch(LuminBuffer buffer) {
             this.buffer = buffer;
