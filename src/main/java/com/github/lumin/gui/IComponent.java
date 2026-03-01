@@ -12,6 +12,10 @@ public interface IComponent {
     default void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
     }
 
+    default void render(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
+        render(set, mouseX, mouseY, deltaTicks);
+    }
+
     default boolean mouseClicked(MouseButtonEvent event, boolean focused) {
         return false;
     }

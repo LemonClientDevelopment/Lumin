@@ -137,27 +137,27 @@ public class ContentPanel implements IComponent {
         return m;
     }
 
-    private void renderSearchBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean focused, boolean hovered, String text) {
-        Color bgColor = focused ? new Color(50, 50, 50, 200) : (hovered ? new Color(40, 40, 40, 200) : new Color(30, 30, 30, 200));
+    private void renderSearchBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean focused, boolean hovered, String text, float alpha) {
+        Color bgColor = focused ? applyAlpha(new Color(50, 50, 50, 200), alpha) : (hovered ? applyAlpha(new Color(40, 40, 40, 200), alpha) : applyAlpha(new Color(30, 30, 30, 200), alpha));
         set.bottomRoundRect().addRoundRect(x, y, w, h, 8f * guiScale, bgColor);
         String display = text.isEmpty() && !focused ? "搜索..." : text;
         if (focused && (System.currentTimeMillis() % 1000 > 500)) display += "_";
-        set.font().addText(display, x + 6 * guiScale, y + h / 2 - 7 * guiScale, guiScale * 0.9f, text.isEmpty() && !focused ? Color.GRAY : Color.WHITE);
+        set.font().addText(display, x + 6 * guiScale, y + h / 2 - 7 * guiScale, guiScale * 0.9f, text.isEmpty() && !focused ? applyAlpha(Color.GRAY, alpha) : applyAlpha(Color.WHITE, alpha));
     }
 
-    private void renderIconBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean hovered) {
-        set.bottomRoundRect().addRoundRect(x, y, w, h, 8f * guiScale, hovered ? new Color(40, 40, 40, 200) : new Color(30, 30, 30, 200));
+    private void renderIconBox(RendererSet set, float x, float y, float w, float h, float guiScale, boolean hovered, float alpha) {
+        set.bottomRoundRect().addRoundRect(x, y, w, h, 8f * guiScale, hovered ? applyAlpha(new Color(40, 40, 40, 200), alpha) : applyAlpha(new Color(30, 30, 30, 200), alpha));
         float iconScale = guiScale * 1.2f;
         float iconW = set.font().getWidth("<", iconScale, StaticFontLoader.ICONS);
         float iconH = set.font().getHeight(iconScale, StaticFontLoader.ICONS);
         float iconX = x + (w - iconW) / 2f;
         float iconY = y + (h - iconH) / 2f - guiScale;
-        set.font().addText("<", iconX, iconY - 1, iconScale, new Color(200, 200, 200), StaticFontLoader.ICONS);
+        set.font().addText("<", iconX, iconY - 1, iconScale, applyAlpha(new Color(200, 200, 200), alpha), StaticFontLoader.ICONS);
     }
 
-    private void renderScrollbar(RendererSet set, float x, float y, float w, float h, float thumbY, float thumbH, boolean dragging, boolean hovered, boolean thumbHovered) {
-        Color trackColor = hovered ? new Color(255, 255, 255, 28) : new Color(255, 255, 255, 18);
-        Color thumbColor = dragging ? new Color(255, 255, 255, 90) : (thumbHovered ? new Color(255, 255, 255, 75) : new Color(255, 255, 255, 55));
+    private void renderScrollbar(RendererSet set, float x, float y, float w, float h, float thumbY, float thumbH, boolean dragging, boolean hovered, boolean thumbHovered, float alpha) {
+        Color trackColor = hovered ? applyAlpha(new Color(255, 255, 255, 28), alpha) : applyAlpha(new Color(255, 255, 255, 18), alpha);
+        Color thumbColor = dragging ? applyAlpha(new Color(255, 255, 255, 90), alpha) : (thumbHovered ? applyAlpha(new Color(255, 255, 255, 75), alpha) : applyAlpha(new Color(255, 255, 255, 55), alpha));
         set.bottomRoundRect().addRoundRect(x, y, w, h, w / 2.0f, trackColor);
         set.bottomRoundRect().addRoundRect(x, thumbY, w, thumbH, w / 2.0f, thumbColor);
     }
@@ -218,7 +218,7 @@ public class ContentPanel implements IComponent {
         return false;
     }
 
-    private void renderListView(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+    private void renderListView(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float padding = 8 * guiScale;
         float spacing = 4 * guiScale;
@@ -231,13 +231,13 @@ public class ContentPanel implements IComponent {
         lastIconBoxW = iconBoxWidth;
         lastIconBoxH = searchHeight;
 
-        renderIconBox(set, lastIconBoxX, lastIconBoxY, iconBoxWidth, searchHeight, guiScale, MouseUtils.isHovering(lastIconBoxX, lastIconBoxY, iconBoxWidth, searchHeight, mouseX, mouseY));
+        renderIconBox(set, lastIconBoxX, lastIconBoxY, iconBoxWidth, searchHeight, guiScale, MouseUtils.isHovering(lastIconBoxX, lastIconBoxY, iconBoxWidth, searchHeight, mouseX, mouseY), alpha);
 
         lastSearchBoxX = lastIconBoxX + iconBoxWidth + spacing;
         lastSearchBoxY = lastIconBoxY;
         lastSearchBoxW = searchBoxWidth;
         lastSearchBoxH = searchHeight;
-        renderSearchBox(set, lastSearchBoxX, lastSearchBoxY, searchBoxWidth, searchHeight, guiScale, listSearchFocused, MouseUtils.isHovering(lastSearchBoxX, lastSearchBoxY, searchBoxWidth, searchHeight, mouseX, mouseY), listSearchText);
+        renderSearchBox(set, lastSearchBoxX, lastSearchBoxY, searchBoxWidth, searchHeight, guiScale, listSearchFocused, MouseUtils.isHovering(lastSearchBoxX, lastSearchBoxY, searchBoxWidth, searchHeight, mouseX, mouseY), listSearchText, alpha);
 
         lastListX = this.x + padding;
         lastListY = lastIconBoxY + searchHeight + padding;
@@ -304,7 +304,7 @@ public class ContentPanel implements IComponent {
             card.width = cardWidth;
             card.height = cardHeight;
             if (card.y + cardHeight >= lastListY && card.y <= listBottom) {
-                card.render(listRoundRect, listFont, mouseX, mouseY, guiScale);
+                card.render(listRoundRect, listFont, mouseX, mouseY, guiScale, alpha);
             }
             visibleIndex++;
         }
@@ -315,7 +315,7 @@ public class ContentPanel implements IComponent {
         listFont.clearScissor();
 
         if (listMaxScroll > 0.0f) {
-            renderScrollbar(set, lastScrollbarX, lastListY, lastScrollbarW, lastListH, lastThumbY, lastThumbH, listDraggingScrollbar, MouseUtils.isHovering(lastScrollbarX, lastListY, lastScrollbarW, lastListH, mouseX, mouseY), MouseUtils.isHovering(lastScrollbarX, lastThumbY, lastScrollbarW, lastThumbH, mouseX, mouseY));
+            renderScrollbar(set, lastScrollbarX, lastListY, lastScrollbarW, lastListH, lastThumbY, lastThumbH, listDraggingScrollbar, MouseUtils.isHovering(lastScrollbarX, lastListY, lastScrollbarW, lastListH, mouseX, mouseY), MouseUtils.isHovering(lastScrollbarX, lastThumbY, lastScrollbarW, lastThumbH, mouseX, mouseY), alpha);
         }
     }
 
@@ -440,7 +440,7 @@ public class ContentPanel implements IComponent {
         return v;
     }
 
-    private void renderSettingsView(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+    private void renderSettingsView(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
         if (settingsComponent == null) return;
 
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
@@ -453,13 +453,13 @@ public class ContentPanel implements IComponent {
         lastIconBoxY = this.y + padding;
         lastIconBoxW = availableWidth * 0.1f;
         lastIconBoxH = searchHeight;
-        renderIconBox(set, lastIconBoxX, lastIconBoxY, lastIconBoxW, searchHeight, guiScale, MouseUtils.isHovering(lastIconBoxX, lastIconBoxY, lastIconBoxW, searchHeight, mouseX, mouseY));
+        renderIconBox(set, lastIconBoxX, lastIconBoxY, lastIconBoxW, searchHeight, guiScale, MouseUtils.isHovering(lastIconBoxX, lastIconBoxY, lastIconBoxW, searchHeight, mouseX, mouseY), alpha);
 
         lastSettingsSearchBoxX = lastIconBoxX + lastIconBoxW + spacing;
         lastSettingsSearchBoxY = lastIconBoxY;
         lastSettingsSearchBoxW = availableWidth * 0.9f;
         lastSettingsSearchBoxH = searchHeight;
-        renderSearchBox(set, lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, searchHeight, guiScale, settingsSearchFocused, MouseUtils.isHovering(lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, searchHeight, mouseX, mouseY), settingsSearchText);
+        renderSearchBox(set, lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, searchHeight, guiScale, settingsSearchFocused, MouseUtils.isHovering(lastSettingsSearchBoxX, lastSettingsSearchBoxY, lastSettingsSearchBoxW, searchHeight, mouseX, mouseY), settingsSearchText, alpha);
 
         lastSettingsX = this.x + padding;
         lastSettingsY = lastIconBoxY + searchHeight + padding;
@@ -512,7 +512,7 @@ public class ContentPanel implements IComponent {
         pickingText.drawAndClear();
 
         if (settingsMaxScroll > 0.0f) {
-            renderScrollbar(set, lastSettingsScrollbarX, lastSettingsY, lastSettingsScrollbarW, lastSettingsH, lastSettingsThumbY, lastSettingsThumbH, settingsDraggingScrollbar, MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsY, lastSettingsScrollbarW, lastSettingsH, mouseX, mouseY), MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsThumbY, lastSettingsScrollbarW, lastSettingsThumbH, mouseX, mouseY));
+            renderScrollbar(set, lastSettingsScrollbarX, lastSettingsY, lastSettingsScrollbarW, lastSettingsH, lastSettingsThumbY, lastSettingsThumbH, settingsDraggingScrollbar, MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsY, lastSettingsScrollbarW, lastSettingsH, mouseX, mouseY), MouseUtils.isHovering(lastSettingsScrollbarX, lastSettingsThumbY, lastSettingsScrollbarW, lastSettingsThumbH, mouseX, mouseY), alpha);
         }
     }
 
@@ -616,7 +616,7 @@ public class ContentPanel implements IComponent {
             enabledAnimation.setStartValue(module.isEnabled() ? 1.0f : 0.0f);
         }
 
-        private void render(RoundRectRenderer round, TextRenderer text, int mouseX, int mouseY, float guiScale) {
+        private void render(RoundRectRenderer round, TextRenderer text, int mouseX, int mouseY, float guiScale, float alpha) {
             if (width <= 0 || height <= 0) return;
 
             boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
@@ -635,7 +635,7 @@ public class ContentPanel implements IComponent {
             float scale = 1.0f + 0.02f * ht;
             float rw = width * scale;
             float rh = height * scale;
-            round.addRoundRect(x - (rw - width) / 2.0f, y - (rh - height) / 2.0f, rw, rh, 10f * guiScale, new Color(r, g, b, a));
+            round.addRoundRect(x - (rw - width) / 2.0f, y - (rh - height) / 2.0f, rw, rh, 10f * guiScale, new Color(r, g, b, (int)(a * alpha)));
 
             float nameScale = 1.1f * guiScale;
             float maxNameWidth = rw - 14 * guiScale;
@@ -652,13 +652,18 @@ public class ContentPanel implements IComponent {
             float blockHeight = nameHeight + 3 * guiScale + descHeight;
             float startY = y - (rh - height) / 2.0f + (rh - blockHeight) / 2f;
 
-            text.addText(module.getName(), x - (rw - width) / 2.0f + (rw - (nameWidth > maxNameWidth ? maxNameWidth : nameWidth)) / 2f, startY - 0.6f * guiScale, nameScale, Color.WHITE);
-            text.addText(module.getDescription(), x - (rw - width) / 2.0f + (rw - (descWidth > maxDescWidth ? maxDescWidth : descWidth)) / 2f, startY + nameHeight + 3 * guiScale - 0.2f * guiScale, descScale, new Color(200, 200, 200));
+            text.addText(module.getName(), x - (rw - width) / 2.0f + (rw - (nameWidth > maxNameWidth ? maxNameWidth : nameWidth)) / 2f, startY - 0.6f * guiScale, nameScale, applyAlpha(Color.WHITE, alpha));
+            text.addText(module.getDescription(), x - (rw - width) / 2.0f + (rw - (descWidth > maxDescWidth ? maxDescWidth : descWidth)) / 2f, startY + nameHeight + 3 * guiScale - 0.2f * guiScale, descScale, applyAlpha(new Color(200, 200, 200), alpha));
         }
     }
 
     @Override
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+        render(set, mouseX, mouseY, deltaTicks, 1.0f);
+    }
+
+    @Override
+    public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float radius = guiScale * 20f;
         BlurShader.drawRoundedBlur(x, y, this.width * guiScale, this.height * guiScale, 0, radius, radius, 0, new Color(0, 0, 0, 0), InterFace.INSTANCE.blurStrength.getValue().floatValue(), 15.0f);
@@ -678,16 +683,20 @@ public class ContentPanel implements IComponent {
         if (currentState == 2) {
             viewAnimation.run(1.0f);
             if (viewAnimation.getValue() >= 0.99f) currentState = 1;
-            renderSettingsView(set, mouseX, mouseY, deltaTicks);
+            renderSettingsView(set, mouseX, mouseY, deltaTicks, alpha);
         } else if (currentState == 3) {
             viewAnimation.run(0.0f);
             if (viewAnimation.getValue() <= 0.01f) { currentState = 0; clearSettingsModule(); }
-            renderListView(set, mouseX, mouseY, deltaTicks);
+            renderListView(set, mouseX, mouseY, deltaTicks, alpha);
         } else if (currentState == 1) {
-            renderSettingsView(set, mouseX, mouseY, deltaTicks);
+            renderSettingsView(set, mouseX, mouseY, deltaTicks, alpha);
         } else {
-            renderListView(set, mouseX, mouseY, deltaTicks);
+            renderListView(set, mouseX, mouseY, deltaTicks, alpha);
         }
+    }
+
+    private static Color applyAlpha(Color color, float alpha) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)(color.getAlpha() * alpha));
     }
 
     @Override

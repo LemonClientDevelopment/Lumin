@@ -55,6 +55,11 @@ public class Sidebar implements IComponent {
 
     @Override
     public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+        render(set, mouseX, mouseY, deltaTicks, 1.0f);
+    }
+
+    @Override
+    public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
 
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float radius = guiScale * 20f;
@@ -66,7 +71,7 @@ public class Sidebar implements IComponent {
 //            BlurShader.drawRoundedBlur(x, y, width, height, radius, InterFace.INSTANCE.blurStrength.getValue().floatValue());
 //        }
         BlurShader.drawRoundedBlur(x, y, width, height, radius, 0, 0, radius, new Color(0, 0, 0, 0), InterFace.INSTANCE.blurStrength.getValue().floatValue(), 15.0f);
-        set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, new Color(0x5F000000,true));
+        set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, applyAlpha(new Color(0x5F000000,true), alpha));
 
         var player = mc.player;
         String playerName = null;
@@ -83,11 +88,11 @@ public class Sidebar implements IComponent {
 
         // Outline
         float outline = 0.5f * guiScale;
-        set.bottomRoundRect().addRoundRect(headX - outline, headY - outline, headSize + outline * 2, headSize + outline * 2, radius - 12 + outline, Color.WHITE);
+        set.bottomRoundRect().addRoundRect(headX - outline, headY - outline, headSize + outline * 2, headSize + outline * 2, radius - 12 + outline, applyAlpha(Color.WHITE, alpha));
 
         // Face
         if (skin != null) {
-            set.texture().addRoundedTexture(skin.texturePath(), headX, headY, headSize, headSize, radius - 12, 0.125f, 0.125f, 0.25f, 0.25f, Color.WHITE);
+            set.texture().addRoundedTexture(skin.texturePath(), headX, headY, headSize, headSize, radius - 12, 0.125f, 0.125f, 0.25f, 0.25f, applyAlpha(Color.WHITE, alpha));
         }
 
         float textX = headX + headSize + 6 * guiScale;
@@ -106,7 +111,7 @@ public class Sidebar implements IComponent {
                 float scaled = defaultScale * (maxNameWidth / nameWidth);
                 if (scaled >= minScale) {
                     currentScale = scaled;
-                    set.font().addText(playerName, textX, nameY, currentScale, Color.WHITE);
+                    set.font().addText(playerName, textX, nameY, currentScale, applyAlpha(Color.WHITE, alpha));
                 } else {
                     currentScale = minScale;
                     nameY -= 6 * guiScale;
@@ -125,14 +130,14 @@ public class Sidebar implements IComponent {
                         }
                     }
                     float lineHeight = set.font().getHeight(currentScale);
-                    set.font().addText(line1.toString(), textX, nameY, currentScale, Color.WHITE);
-                    set.font().addText(line2.toString(), textX, nameY + lineHeight, currentScale, Color.WHITE);
+                    set.font().addText(line1.toString(), textX, nameY, currentScale, applyAlpha(Color.WHITE, alpha));
+                    set.font().addText(line2.toString(), textX, nameY + lineHeight, currentScale, applyAlpha(Color.WHITE, alpha));
                 }
             } else {
-                set.font().addText(playerName, textX, nameY, currentScale, Color.WHITE);
+                set.font().addText(playerName, textX, nameY, currentScale, applyAlpha(Color.WHITE, alpha));
             }
 
-            set.font().addText("游戏账号", textX, accountY + 2, guiScale * 0.7f, Color.GRAY);
+            set.font().addText("游戏账号", textX, accountY + 2, guiScale * 0.7f, applyAlpha(Color.GRAY, alpha));
         }
 
         // Category Placeholder
@@ -143,7 +148,7 @@ public class Sidebar implements IComponent {
         float categoryHeight = categoryBars.size() * (itemHeight + itemPadding) + itemPadding;
 
         if (categoryHeight > 0) {
-            set.bottomRoundRect().addRoundRect(headX, categoryY, width - padding * 2, categoryHeight, radius - 12, new Color(35, 35, 35, 180));
+            set.bottomRoundRect().addRoundRect(headX, categoryY, width - padding * 2, categoryHeight, radius - 12, applyAlpha(new Color(35, 35, 35, 180), alpha));
 
             float currentY = categoryY + itemPadding;
             float itemWidth = width - padding * 2 - itemPadding * 2;
@@ -168,12 +173,16 @@ public class Sidebar implements IComponent {
             selectedHighlightY.run(selectedTargetY);
             float hy = selectedHighlightY.getValue();
 
-            set.bottomRoundRect().addRoundRect(itemX, hy, itemWidth, itemHeight, 8.0f * guiScale, new Color(255, 255, 255, 52));
+            set.bottomRoundRect().addRoundRect(itemX, hy, itemWidth, itemHeight, 8.0f * guiScale, applyAlpha(new Color(255, 255, 255, 52), alpha));
 
             for (CategoryBar bar : categoryBars) {
-                bar.render(set, mouseX, mouseY, guiScale);
+                bar.render(set, mouseX, mouseY, guiScale, alpha);
             }
         }
+    }
+
+    private Color applyAlpha(Color color, float alpha) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)(color.getAlpha() * alpha));
     }
 
     private class CategoryBar {
@@ -185,13 +194,13 @@ public class Sidebar implements IComponent {
             this.category = category;
         }
 
-        private void render(RendererSet set, int mouseX, int mouseY, float guiScale) {
+        private void render(RendererSet set, int mouseX, int mouseY, float guiScale, float alpha) {
 
             boolean hovered = MouseUtils.isHovering(x, y, width, height, mouseX, mouseY);
             boolean isSelected = category == selectedCategory;
 
             if (hovered && !isSelected) {
-                set.bottomRoundRect().addRoundRect(x, y, width, height, 8 * guiScale, new Color(255, 255, 255, 30));
+                set.bottomRoundRect().addRoundRect(x, y, width, height, 8 * guiScale, applyAlpha(new Color(255, 255, 255, 30), alpha));
             }
 
             float iconScale = guiScale * 1.0f;
@@ -201,14 +210,14 @@ public class Sidebar implements IComponent {
             float iconX = x + 8 * guiScale;
             float iconY = y + (height - iconHeight) / 2f - guiScale;
 
-            set.font().addText(category.icon, iconX, iconY, iconScale, isSelected || hovered ? Color.WHITE : Color.GRAY, StaticFontLoader.ICONS);
+            set.font().addText(category.icon, iconX, iconY, iconScale, isSelected || hovered ? applyAlpha(Color.WHITE, alpha) : applyAlpha(Color.GRAY, alpha), StaticFontLoader.ICONS);
 
             float textX = iconX + iconWidth + 6 * guiScale;
             float nameY = y + guiScale;
             float descriptionY = nameY + 12 * guiScale;
 
-            set.font().addText(category.getName(), textX, nameY, guiScale * 0.9f, Color.WHITE);
-            set.font().addText(category.description, textX, descriptionY, guiScale * 0.6f, Color.GRAY);
+            set.font().addText(category.getName(), textX, nameY, guiScale * 0.9f, applyAlpha(Color.WHITE, alpha));
+            set.font().addText(category.description, textX, descriptionY, guiScale * 0.6f, applyAlpha(Color.GRAY, alpha));
         }
 
     }

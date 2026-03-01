@@ -6,6 +6,8 @@ import com.github.lumin.gui.clickgui.component.impl.ColorSettingComponent;
 import com.github.lumin.gui.clickgui.panel.Panel;
 import com.github.lumin.modules.impl.client.ClickGui;
 import com.github.lumin.modules.impl.client.InterFace;
+import com.github.lumin.utils.render.animation.Animation;
+import com.github.lumin.utils.render.animation.Easing;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -22,13 +24,16 @@ public class ClickGuiScreen extends Screen {
 
     private final RectRenderer rectRenderer = new RectRenderer();
 
+    private final Animation openAnimation = new Animation(Easing.EASE_OUT_QUAD, 300);
+
     public ClickGuiScreen() {
         super(Component.literal("ClickGui"));
     }
 
     @Override
     protected void init() {
-
+        openAnimation.setStartValue(0f);
+        openAnimation.run(1f);
     }
 
     @Override
@@ -36,14 +41,17 @@ public class ClickGuiScreen extends Screen {
         final int guiW = getMinecraft().getWindow().getGuiScaledWidth();
         final int guiH = getMinecraft().getWindow().getGuiScaledHeight();
 
+        openAnimation.run(1f);
+        float alpha = openAnimation.getValue();
+
         if (InterFace.INSTANCE.backgroundBlur.getValue() && InterFace.INSTANCE.blurMode.is("全屏")) {
             BlurShader.drawQuadBlur(0, 0, guiW, guiH, InterFace.INSTANCE.blurStrength.getValue().floatValue());
         }
 
-        rectRenderer.addRect(0, 0, guiW, guiH, new Color(18, 18, 18, 110));
+        rectRenderer.addRect(0, 0, guiW, guiH, new Color(18, 18, 18, (int)(110 * alpha)));
         rectRenderer.drawAndClear();
 
-        panel.render(null, mouseX, mouseY, partialTick);
+        panel.render(null, mouseX, mouseY, partialTick, alpha);
     }
 
     @Override

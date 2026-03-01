@@ -24,12 +24,13 @@ public class Panel implements IComponent {
     private final Sidebar sidebar = new Sidebar();
     private final ContentPanel contentPanel = new ContentPanel();
 
+
     public Panel() {
         sidebar.setOnSelect(contentPanel::setCurrentCategory);
         contentPanel.setCurrentCategory(sidebar.getSelectedCategory());
     }
 
-    public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks) {
+    public void render(RendererSet set, int mouseX, int mouseY, float deltaTicks, float alpha) {
 
         float guiScale = InterFace.INSTANCE.scale.getValue().floatValue();
         float screenWidth = mc.getWindow().getGuiScaledWidth();
@@ -55,9 +56,8 @@ public class Panel implements IComponent {
 
         sidebar.setBounds(x, y, sidebarWidth, height);
         contentPanel.setBounds(x + sidebarWidth, y, contentWidth, height);
-
-        sidebar.render(this.set, mouseX, mouseY, deltaTicks);
-        contentPanel.render(this.set, mouseX, mouseY, deltaTicks);
+        sidebar.render(this.set, mouseX, mouseY, deltaTicks, alpha);
+        contentPanel.render(this.set, mouseX, mouseY, deltaTicks, alpha);
 
         bottomRoundRect.drawAndClear();
         topRoundRect.drawAndClear();
