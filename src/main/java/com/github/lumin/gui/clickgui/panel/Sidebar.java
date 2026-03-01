@@ -71,7 +71,7 @@ public class Sidebar implements IComponent {
 //            BlurShader.drawRoundedBlur(x, y, width, height, radius, ClickGui.INSTANCE.blurStrength.getValue().floatValue());
 //        }
         BlurShader.drawRoundedBlur(x, y, width, height, radius, 0, 0, radius, new Color(0, 0, 0, 0), ClickGui.INSTANCE.blurStrength.getValue().floatValue(), 15.0f);
-        set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, applyAlpha(new Color(0x5F000000,true), alpha));
+        set.bottomRoundRect().addRoundRect(x, y, width, height, radius, 0, 0, radius, applyAlpha(new Color(0x5F000000, true), alpha));
 
         var player = mc.player;
         String playerName = null;
@@ -182,7 +182,7 @@ public class Sidebar implements IComponent {
     }
 
     private Color applyAlpha(Color color, float alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int)(color.getAlpha() * alpha));
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * alpha));
     }
 
     private class CategoryBar {

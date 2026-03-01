@@ -47,7 +47,7 @@ public class ClickGuiScreen extends Screen {
             BlurShader.drawQuadBlur(0, 0, guiW, guiH, ClickGui.INSTANCE.blurStrength.getValue().floatValue());
         }
 
-        rectRenderer.addRect(0, 0, guiW, guiH, new Color(18, 18, 18, (int)(110 * alpha)));
+        rectRenderer.addRect(0, 0, guiW, guiH, new Color(18, 18, 18, (int) (110 * alpha)));
         rectRenderer.drawAndClear();
 
         panel.render(null, mouseX, mouseY, partialTick, alpha);

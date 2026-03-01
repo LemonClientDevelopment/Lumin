@@ -2,16 +2,22 @@ package com.github.lumin.mixins;
 
 import com.github.lumin.events.JumpRotationEvent;
 import com.github.lumin.managers.Managers;
+import com.github.lumin.modules.impl.player.JumpCooldown;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Vector2f;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LivingEntity.class)
 public abstract class MixinLivingEntity {
+
+    @Shadow
+    private int noJumpDelay;
 
     @Redirect(method = "jumpFromGround", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"))
     private float redirectGetYRotInJumpFromGround(LivingEntity instance) {
@@ -31,6 +37,16 @@ public abstract class MixinLivingEntity {
             }
         }
         return entity.getYRot();
+    }
+
+    @Redirect(method = "aiStep", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/LivingEntity;noJumpDelay:I", opcode = Opcodes.PUTFIELD, ordinal = 1))
+    private void redirectJumpingCooldown(LivingEntity instance, int value) {
+        JumpCooldown module = JumpCooldown.INSTANCE;
+        if (instance == Minecraft.getInstance().player && module.isEnabled()) {
+            this.noJumpDelay = module.cooldown.getValue();
+        } else {
+            this.noJumpDelay = value;
+        }
     }
 
 }
